@@ -5,8 +5,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from . import expander, interp
-from . import prims_data, prims_misc, prims_numbers  # noqa: F401 (register)
+from . import expander, interp, syntax_rules
+from . import control, prims_data, prims_misc, prims_numbers  # noqa: F401
 from .reader import Reader
 from .registry import PRIMITIVES
 from .types import EOF, UNSPECIFIED, Environment
@@ -24,6 +24,7 @@ class Runtime:
         for name, proc in PRIMITIVES.items():
             self.env.define(name, proc)
         expander.install(self.env, {n: PRIMITIVES[n] for n in _HELPERS})
+        syntax_rules.install(self.env)
         self.expander = expander.Expander(self.env)
         self.machine = interp.Machine()
         self.eval_string(PRELUDE.read_text(encoding="utf-8"))

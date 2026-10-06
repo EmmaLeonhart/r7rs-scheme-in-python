@@ -52,3 +52,26 @@ milestones. Newest at the bottom.
 - README: status, design and limits. CI green on Ubuntu and Windows,
   Python 3.9 and 3.13. 58 tests.
 - Stage 2 planned into `queue.md` (dynamic-state register design).
+
+## 2026-10-05 (stage 2 done)
+
+- Dynamic state on the machine (winders, handler stack, parameter
+  bindings), captured by continuations (`tulip/control.py`).
+- call/cc with escape and re-entry; continuations accept multiple values.
+  dynamic-wind, including the report's connect/talk/disconnect example.
+- Exceptions: with-exception-handler, raise, raise-continuable; primitive
+  failures and unbound variables are error objects that go through the same
+  handlers; guard follows the report's reference expansion (re-raise with
+  raise-continuable in the original dynamic environment).
+- make-parameter (with converter) and parameterize.
+- let-values, let*-values, define-values (top level and internal).
+- syntax-rules (`tulip/syntax_rules.py`): define-syntax, let-syntax,
+  letrec-syntax, internal define-syntax; literals, `_`, ellipsis followed by
+  more patterns, dotted tails, vectors, nested ellipses, custom ellipsis,
+  `(... ...)`; hygiene checked with the report's let-syntax and
+  letrec-syntax examples.
+- Three of my first stage 2 tests were wrong (a generator that never updated
+  its return continuation and so looped forever, and two that expected
+  top-level forms to re-run after re-entering a continuation). Fixed the
+  tests and recorded the top-level behavior as a limit in the README.
+- 93 tests pass.

@@ -459,17 +459,26 @@ def arity_error(f, n):
 # --- the machine ------------------------------------------------------------------
 
 class Machine:
-    """Registers plus the run loop. ``k is None`` means halt."""
+    """Registers plus the run loop. ``k is None`` means halt.
+
+    ``winders``, ``handlers`` and ``params`` are the dynamic state (see
+    control.py); continuations capture them along with ``k``.
+    """
 
     def __init__(self):
         self.node = None
         self.env = None
         self.val = None
         self.k = None
+        self.winders = None
+        self.handlers = None
+        self.params = None
 
     def run(self, x, env=None):
         """Evaluate executable node ``x`` to a value."""
+        from .control import signal
         saved = (self.node, self.env, self.val, self.k)
+        saved_dyn = (self.winders, self.handlers, self.params)
         self.node = x
         self.env = env
         self.k = None
@@ -479,16 +488,28 @@ class Machine:
                     self._loop()
                     return self.val
                 except SchemeError as e:
-                    self.signal(e)
+                    err = e
                 except RecursionError:
-                    self.signal(SchemeError("Python recursion limit reached"))
+                    err = SchemeError("Python recursion limit reached")
                 except ZeroDivisionError:
-                    self.signal(SchemeError("division by zero"))
+                    err = SchemeError("division by zero")
                 except (TypeError, ValueError, AttributeError, IndexError,
                         KeyError, OverflowError) as e:
-                    self.signal(SchemeError("%s: %s" % (type(e).__name__, e)))
+                    err = SchemeError("%s: %s" % (type(e).__name__, e))
+                # Hand the error to the current Scheme handler; calling the
+                # handler can itself fail, which signals the next one out.
+                while True:
+                    try:
+                        if not signal(self, err):
+                            raise err
+                        break
+                    except SchemeError as e:
+                        if e is err:
+                            raise
+                        err = e
         finally:
             self.node, self.env, self.val, self.k = saved
+            self.winders, self.handlers, self.params = saved_dyn
 
     def _loop(self):
         while True:
@@ -501,10 +522,6 @@ class Machine:
                     return
                 self.k = k.next
                 k.resume(self)
-
-    def signal(self, error):
-        """Deliver a raised condition. Stage 1 has no handlers: re-raise."""
-        raise error
 
     def apply(self, f, args):
         """Call a Scheme procedure from Python and return its value."""

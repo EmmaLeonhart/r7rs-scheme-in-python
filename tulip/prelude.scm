@@ -67,3 +67,16 @@
                 (%promise-update! promise* promise))
             (force promise)))
       promise))
+
+;;; Parameters (R7RS 4.2.6). The converter is applied to the initial value
+;;; and to every parameterize value.
+
+(define (make-parameter value . converter)
+  (if (null? converter)
+      (%make-parameter value (lambda (x) x))
+      (%make-parameter ((car converter) value) (car converter))))
+
+(define (%parameterize params vals body)
+  (%with-parameters params
+                    (map (lambda (p v) ((%parameter-converter p) v)) params vals)
+                    body))

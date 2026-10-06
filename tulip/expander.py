@@ -732,12 +732,137 @@ def m_define_record_type(exp, form, use, env):
     return Pair(k("begin"), make_list(out))
 
 
+def m_parameterize(exp, form, use, env):
+    k = _kw(env)
+    args = form_list(form.cdr, "parameterize")
+    if len(args) < 2:
+        raise syntax_error("bad parameterize", form)
+    params, vals = [], []
+    for b in form_list(args[0], "parameterize bindings"):
+        parts = form_list(b, "parameterize binding") if isinstance(b, Pair) else None
+        if not parts or len(parts) != 2:
+            raise syntax_error("bad parameterize binding", form)
+        params.append(parts[0])
+        vals.append(parts[1])
+    return L(k("%parameterize"), Pair(k("list"), make_list(params)),
+             Pair(k("list"), make_list(vals)),
+             Pair(k("lambda"), Pair(NIL, make_list(args[1:]))))
+
+
+def m_guard(exp, form, use, env):
+    """R7RS 4.2.7, following the report's reference expansion: the clauses
+    run in the dynamic environment of the guard; with no matching clause the
+    condition is re-raised with raise-continuable in the dynamic environment
+    of the original raise."""
+    k = _kw(env)
+    args = form_list(form.cdr, "guard")
+    if len(args) < 2 or not isinstance(args[0], Pair)             or not is_identifier(args[0].car):
+        raise syntax_error("bad guard", form)
+    var = args[0].car
+    clauses = form_list(args[0].cdr, "guard clauses")
+    body = make_list(args[1:])
+    guard_k, handler_k = fresh("guard-k", env), fresh("handler-k", env)
+    condition, vals = fresh("condition", env), fresh("args", env)
+    reraise = L(handler_k, L(k("lambda"), NIL, L(k("raise-continuable"), condition)))
+    has_else = clauses and isinstance(clauses[-1], Pair)         and exp.is_kw(clauses[-1].car, use, "else", env)
+    if not has_else:
+        clauses = clauses + [L(k("else"), reraise)]
+    handler = L(k("lambda"), L(condition),
+                L(L(k("call/cc"),
+                    L(k("lambda"), L(handler_k),
+                      L(guard_k,
+                        L(k("lambda"), NIL,
+                          L(k("let"), L(L(var, condition)),
+                            Pair(k("cond"), make_list(clauses)))))))))
+    thunk = L(k("lambda"), NIL,
+              L(k("call-with-values"), Pair(k("lambda"), Pair(NIL, body)),
+                L(k("lambda"), vals,
+                  L(guard_k, L(k("lambda"), NIL,
+                               L(k("apply"), k("values"), vals))))))
+    return L(L(k("call/cc"),
+               L(k("lambda"), L(guard_k),
+                 L(k("with-exception-handler"), handler, thunk))))
+
+
+def _values_formals(formals, env):
+    """Fresh temporaries with the same shape as ``formals``; returns
+    (temp formals, [(user identifier, temp)...])."""
+    pairs = []
+    temps = []
+    p = formals
+    while isinstance(p, Pair):
+        if not is_identifier(p.car):
+            raise syntax_error("bad formals", formals)
+        t = fresh("v", env)
+        temps.append(t)
+        pairs.append((p.car, t))
+        p = p.cdr
+    tail = NIL
+    if p is not NIL:
+        if not is_identifier(p):
+            raise syntax_error("bad formals", formals)
+        tail = fresh("rest", env)
+        pairs.append((p, tail))
+    return make_list(temps, tail), pairs
+
+
+def m_let_values(exp, form, use, env):
+    k = _kw(env)
+    args = form_list(form.cdr, "let-values")
+    if len(args) < 2:
+        raise syntax_error("bad let-values", form)
+    bindings = form_list(args[0], "let-values bindings")
+    all_pairs = []
+    specs = []
+    for b in bindings:
+        parts = form_list(b, "let-values binding") if isinstance(b, Pair) else None
+        if not parts or len(parts) != 2:
+            raise syntax_error("bad let-values binding", form)
+        temps, pairs = _values_formals(parts[0], env)
+        specs.append((temps, parts[1]))
+        all_pairs.extend(pairs)
+    result = Pair(k("let"), Pair(make_list([L(u, t) for u, t in all_pairs]),
+                                 make_list(args[1:])))
+    for temps, expr in reversed(specs):
+        result = L(k("call-with-values"), L(k("lambda"), NIL, expr),
+                   L(k("lambda"), temps, result))
+    return result
+
+
+def m_let_star_values(exp, form, use, env):
+    k = _kw(env)
+    args = form_list(form.cdr, "let*-values")
+    if len(args) < 2:
+        raise syntax_error("bad let*-values", form)
+    bindings = form_list(args[0], "let*-values bindings")
+    if len(bindings) <= 1:
+        return Pair(k("let-values"), Pair(make_list(bindings), make_list(args[1:])))
+    return L(k("let-values"), L(bindings[0]),
+             Pair(k("let*-values"), Pair(make_list(bindings[1:]), make_list(args[1:]))))
+
+
+def m_define_values(exp, form, use, env):
+    k = _kw(env)
+    args = form_list(form.cdr, "define-values")
+    if len(args) != 2:
+        raise syntax_error("bad define-values", form)
+    temps, pairs = _values_formals(args[0], env)
+    defs = [L(k("define"), u) for u, _ in pairs]
+    sets = [L(k("set!"), u, t) for u, t in pairs]
+    setter = Pair(k("lambda"), Pair(temps, make_list(sets + [UNSPECIFIED])))
+    return Pair(k("begin"), make_list(
+        defs + [L(k("call-with-values"), L(k("lambda"), NIL, args[1]), setter)]))
+
+
 PYTHON_MACROS = {
     "let": m_let, "let*": m_let_star, "letrec": m_letrec, "letrec*": m_letrec,
     "cond": m_cond, "case": m_case, "and": m_and, "or": m_or,
     "when": m_when, "unless": m_unless, "do": m_do,
     "quasiquote": m_quasiquote, "delay": m_delay, "delay-force": m_delay_force,
     "case-lambda": m_case_lambda, "define-record-type": m_define_record_type,
+    "parameterize": m_parameterize, "guard": m_guard,
+    "let-values": m_let_values, "let*-values": m_let_star_values,
+    "define-values": m_define_values,
 }
 
 # Procedures the derived forms call directly (embedded as constants, so user

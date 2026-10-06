@@ -18,7 +18,8 @@ R7RS-small. It is built in stages:
 
 ## Status
 
-**Stage 1 (the interpreter) is done.** Run a program with
+**Stages 1 (the interpreter) and 2 (control and macros) are done.** Run a
+program with
 `python -m tulip program.scm`, or start a basic REPL with `python -m tulip`.
 
 ```
@@ -42,8 +43,17 @@ and lists, symbols, characters, strings, vectors and bytevectors; `apply`,
 `call-with-values`; `write`, `write-shared`, `write-simple`, `display` and
 string output ports.
 
-Next: stage 2 (`call/cc`, `dynamic-wind`, exceptions, `syntax-rules`); see
-`todo.md` for the rest.
+Stage 2 added: `call/cc` (escaping and re-entrant, multi-shot) and
+`dynamic-wind`; `with-exception-handler`, `raise`, `raise-continuable`,
+`guard`, and error objects (errors signalled by primitives, such as `(car 5)`,
+are ordinary error objects a handler or `guard` can catch); `make-parameter`
+and `parameterize`; `let-values`, `let*-values`, `define-values`; and
+hygienic `syntax-rules` with `define-syntax`, `let-syntax`, `letrec-syntax`
+and internal `define-syntax`. Patterns support literals, `_`, an ellipsis
+anywhere in a list (`(a ... b c)`), dotted tails, vectors, nested ellipses,
+a custom ellipsis identifier and the `(... ...)` escape.
+
+Next: stage 3 (libraries, ports and file I/O, a REPL); see `todo.md`.
 
 ## Design
 
@@ -67,7 +77,15 @@ text --reader--> data --expander--> core AST --compile--> nodes --machine--> val
   over immutable, heap-allocated continuation frames rather than recursive
   Python calls. Tail calls push no frame, deep recursion grows the heap rather
   than the Python stack, and a continuation is simply the frame chain, which
-  is what stage 2's `call/cc` captures.
+  is what `call/cc` captures. The machine also keeps the *dynamic state*
+  (the `dynamic-wind` entries, the exception-handler stack and `parameterize`
+  bindings) as immutable linked lists that continuations capture too; calling
+  a continuation runs the `after` and `before` thunks it crosses as ordinary
+  Scheme calls (`tulip/control.py`).
+- **Macros** (`tulip/syntax_rules.py`): `syntax-rules` matches patterns and
+  instantiates templates, renaming every identifier the template introduces to
+  an alias of the macro's definition environment. The same alias mechanism
+  the derived forms use then gives hygiene in both directions.
 - **Primitives** are Python functions (`tulip/prims_*.py`); procedures that
   call other procedures (`map`, `for-each`, `member` with a predicate,
   `force`...) are written in Scheme in `tulip/prelude.scm`, so continuations
@@ -86,9 +104,18 @@ text --reader--> data --expander--> core AST --compile--> nodes --machine--> val
 - **Top-level redefinition of a keyword** (`(define if ...)`) also affects the
   built-in derived forms that expand into it; the library system (stage 3)
   will separate user and system bindings.
-- Not yet implemented (later stages): `call/cc`, `dynamic-wind`, `raise` /
-  `guard` / `with-exception-handler`, `syntax-rules`, parameters,
-  `let-values`, libraries, input ports and file I/O, `eval`.
+- **Continuations and top-level forms.** A program is run one top-level
+  form at a time. Invoking a continuation captured in an earlier top-level
+  form finishes that form, then carries on with the form that invoked it; it
+  does not re-run the forms in between.
+- **Only `syntax-rules`.** There are no low-level macro transformers
+  (`er-macro-transformer`, `syntax-case`); R7RS-small does not require them.
+- **Top-level definitions a macro introduces are not renamed**: a macro that
+  expands to `(define helper ...)` at top level defines `helper` itself.
+  Internal definitions introduced by a macro are hygienic.
+- Not yet implemented (stage 3): libraries (`define-library`, `import`),
+  input ports and file I/O, `read`, `eval`, `load`, the process-context
+  and time procedures.
 
 ## Development
 

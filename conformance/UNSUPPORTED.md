@@ -28,7 +28,9 @@ Affected tests (14, in `6.2-numbers.scm`):
 - **5.7 The REPL**: a program cannot drive a REPL portably; tulip's REPL is
   tested in `tests/test_system.py`.
 - **6.14 `exit` and `emergency-exit`** end the process, so they cannot run
-  inside a section file; `tests/test_system.py` tests them through the CLI.
+  inside a section file; `tests/test_system.py` tests them (exit codes,
+  `after` thunks run by `exit` and not by `emergency-exit`, not catchable by
+  `guard`, exit status through the CLI).
 - **"It is an error" cases** are not tested anywhere in the suite: the
   report does not require them to be signalled.
 - **Unspecified results** (for example `(eqv? "" "")`) are not tested.

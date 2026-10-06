@@ -77,6 +77,15 @@ class ProcessContextTests(SchemeTestCase):
         self.assertEqual(cm.exception.code, 3)
         self.assertEqual(buf.getvalue(), "after")
 
+    def test_emergency_exit_skips_after_thunks(self):
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            with self.assertRaises(SchemeExit) as cm:
+                self.ev("(dynamic-wind (lambda () #f) (lambda () (emergency-exit 4))"
+                        " (lambda () (display \"after\")))")
+        self.assertEqual(cm.exception.code, 4)
+        self.assertEqual(buf.getvalue(), "")
+
     def test_exit_codes(self):
         for src, code in [("(exit)", 0), ("(exit #t)", 0), ("(exit #f)", 1),
                           ("(exit 7)", 7), ("(emergency-exit 2)", 2)]:

@@ -11,3 +11,26 @@ milestones. Newest at the bottom.
   `EmmaLeonhart/r7rs-scheme-in-python` created and pushed.
 - cleanvibe update check: v2.0.4 is the latest, skills already current.
 - README filled in; `todo.md` (stages 2 to 5) and `queue.md` (stage 1) written.
+
+## 2026-10-05 (stage 1, first pass)
+
+- Package skeleton: `tulip/` (stdlib only), `python -m tulip [FILE]` with a
+  basic REPL, `pyproject.toml`, unittest suite under `tests/`, GitHub Actions
+  CI on Ubuntu and Windows with Python 3.9 and 3.13.
+- Data model (`types.py`): interned symbols, pairs/NIL, mutable strings,
+  chars, vectors as lists, bytevectors as bytearray, closures, primitives,
+  promises, records, error objects.
+- Reader (`reader.py`): all stage 1 lexical syntax, plus datum labels and
+  `#!fold-case`. Complex-number syntax is rejected with a clear error.
+- Printer (`printer.py`): write (labels only cycles), write-shared,
+  write-simple, display.
+- Expander (`expander.py`) to a core AST (`ast.py`): explicit-renaming
+  aliases, so the built-in derived forms are hygienic already; internal
+  defines with letrec* semantics. Derived forms: let/let*/letrec/letrec*,
+  named let, cond/case with `=>`, and/or/when/unless, do, nested
+  quasiquote, delay/delay-force, case-lambda, define-record-type.
+- Interpreter (`interp.py`): explicit-continuation machine over lexically
+  addressed nodes. Proper tail calls; deep non-tail recursion (300k) runs
+  without touching the Python stack. 1M-iteration loop: about 2.8 s.
+- 34 unit tests pass (reader, printer, core and derived forms, hygiene of
+  derived forms, tail positions).

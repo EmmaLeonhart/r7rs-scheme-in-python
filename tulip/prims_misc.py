@@ -9,9 +9,15 @@ from .registry import PRIMITIVES, prim
 from .types import (Closure, CaseLambda, Char, ErrorObject, MString,
                     Pair, Primitive, Procedure, Promise, Record, RecordType,
                     SchemeError, Symbol, UNSPECIFIED, list_to_python,
-                    make_list)
+                    make_list, values)
 
 PRIMITIVES["apply"] = interp.APPLY
+PRIMITIVES["call-with-values"] = interp.CALL_WITH_VALUES
+
+
+@prim("values", 0, rest=True)
+def values_(*items):
+    return values(*items)
 
 
 @prim("procedure?", 1)

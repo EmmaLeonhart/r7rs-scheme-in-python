@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from . import ast
 from .types import (NIL, UNASSIGNED, UNBOUND, UNSPECIFIED, CaseLambda,
+                    MultipleValues,
                     Closure, ControlPrimitive, Pair, Primitive, SchemeError,
                     make_list)
 
@@ -593,3 +594,26 @@ def _apply(m, args):
 
 
 APPLY = ControlPrimitive(_apply, "apply", 2, rest=True)
+
+
+class ValuesFrame:
+    """Continuation of the producer in call-with-values."""
+    __slots__ = ("consumer", "next")
+
+    def __init__(self, consumer, next):
+        self.consumer = consumer
+        self.next = next
+
+    def resume(self, m):
+        v = m.val
+        args = list(v.items) if type(v) is MultipleValues else [v]
+        apply_procedure(m, self.consumer, args)
+
+
+def _call_with_values(m, args):
+    producer, consumer = args
+    m.k = ValuesFrame(consumer, m.k)
+    apply_procedure(m, producer, [])
+
+
+CALL_WITH_VALUES = ControlPrimitive(_call_with_values, "call-with-values", 2)

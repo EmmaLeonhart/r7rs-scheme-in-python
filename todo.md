@@ -3,11 +3,6 @@
 Abstract destinations, from `data_lake/brief.md`. Each is pulled into
 `queue.md` as concrete steps when its turn comes.
 
-- **Stage 2: control and macros.** call/cc and dynamic-wind, exceptions
-  (raise, raise-continuable, guard, with-exception-handler, error objects),
-  multiple values (values, call-with-values, let-values, define-values), and
-  hygienic syntax-rules (ellipsis, literals, nested ellipsis, custom ellipsis,
-  let-syntax/letrec-syntax).
 - **Stage 3: libraries, ports, REPL.** define-library and import with the
   standard (scheme base) etc. library names, cond-expand, include; textual and
   binary ports, string ports, file I/O, read/write/display including

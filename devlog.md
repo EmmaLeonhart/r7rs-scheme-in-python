@@ -34,3 +34,21 @@ milestones. Newest at the bottom.
   without touching the Python stack. 1M-iteration loop: about 2.8 s.
 - 34 unit tests pass (reader, printer, core and derived forms, hygiene of
   derived forms, tail positions).
+
+## 2026-10-05 (stage 1 done)
+
+- Numeric tower tested (`tests/test_numbers.py`, report examples):
+  predicates, comparison with mixed exactness, arithmetic incl. bignums and
+  inexact division by zero, floor/ and truncate/ families, gcd/lcm,
+  numerator/denominator, rationalize, rounding (half to even),
+  transcendental functions, exact sqrt where possible, exactness conversion,
+  number<->string with radix.
+- Standard procedures tested (`tests/test_procedures.py`): equivalence
+  (`equal?` terminates on cycles), pairs and lists, member/assoc with a
+  predicate, multi-list map/for-each, symbols, chars, strings, vectors,
+  bytevectors, booleans.
+- `values` and `call-with-values` added early (a small `MultipleValues`
+  object; `call-with-values` is a machine-level primitive).
+- README: status, design and limits. CI green on Ubuntu and Windows,
+  Python 3.9 and 3.13. 58 tests.
+- Stage 2 planned into `queue.md` (dynamic-state register design).

@@ -284,3 +284,11 @@ milestones. Newest at the bottom.
   portability issue, not an engine difference in behavior.
 - Totals: 151 unit tests on each engine; conformance 1273 tests per engine,
   all passing, 14 expected failures (complex numbers).
+
+## 2026-10-06 (stage 5 done: all five stages of the brief)
+
+- README: a Conformance section (how to run, results on both engines, the
+  six bugs the suite found), status updated to all five stages done.
+- `conformance/run.py` accepts a bare section file name as well as a path.
+- `queue.md` is empty. INTENT.md records that the brief is complete and that
+  complex numbers and further VM speed work are the user's call, not queued.

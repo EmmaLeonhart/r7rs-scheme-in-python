@@ -76,7 +76,8 @@ def main(argv=None):
     opts = ap.parse_args(argv)
 
     engines = ENGINES if opts.engine == "both" else (opts.engine,)
-    paths = [Path(f).resolve() for f in opts.files] if opts.files else section_files()
+    # a FILE may be a path or just a section file's name in conformance/
+    paths = [(Path(f) if Path(f).exists() else HERE / f).resolve() for f in opts.files]         if opts.files else section_files()
     bad = 0
     totals = [0, 0, 0, 0]
     for path in paths:

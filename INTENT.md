@@ -61,5 +61,20 @@ High: the brief is explicit about what to build and in what order.
 - Work mode started 2026-10-05 22:45 PST (from `date`), by the intake verdict
   WORK MODE (material present, no chat).
 - Stages 1 to 3 done 2026-10-05; stage 4 (bytecode VM, benchmarks) done
-  2026-10-06 01:00 (from `date`). Stage 5 (conformance) under way. The user
-  has still said nothing in chat; the plan follows the brief unchanged.
+  2026-10-06 01:00; stage 5 (conformance suite, 1273 tests per engine, all
+  passing; complex numbers recorded as unsupported) done 2026-10-06 01:33
+  (times from `date`). The user has said nothing in chat; the plan followed
+  the brief unchanged.
+
+## Where it stands
+
+Everything the brief asks for is done. The brief says "keep going after
+each one" but lists nothing after stage 5, so there is no further planned
+work. Not queued, on purpose:
+
+- Complex numbers: the brief's stage 1 names the numeric tower as exact
+  integers, rationals and inexact reals, and R7RS makes complex numbers
+  optional (6.2.3). Adding them would be new scope: NEEDS-DECISION by the
+  user.
+- Further VM speed work: the brief asks for a VM and benchmarks, not a
+  target speed. Also NEEDS-DECISION by the user.

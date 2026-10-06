@@ -18,8 +18,9 @@ R7RS-small. It is built in stages:
 
 ## Status
 
-**Stages 1 to 4 are done**: the interpreter, control and macros,
-libraries, ports and the REPL, and the bytecode VM. Run a program with
+**All five stages are done**: the interpreter, control and macros,
+libraries, ports and the REPL, the bytecode VM, and a conformance suite
+written from the R7RS report that both engines pass. Run a program with
 `python -m tulip program.scm [args...]`, or start the REPL with
 `python -m tulip`. Add `--engine vm` (before the file name) to run on the
 bytecode VM instead of the reference interpreter.
@@ -75,7 +76,38 @@ error, and reads a datum across lines. A program's exit status is its
 A program may start with `import` declarations as R7RS programs do. For
 convenience, a file without them (and the REPL) sees every standard library.
 
-Next: stage 5, a conformance suite written from the R7RS report (`todo.md`).
+## Conformance
+
+`conformance/` holds a test suite written from the R7RS-small report
+(July 2013, in `data_lake/downloads/r7rs.pdf`), one program per section:
+chapters 2 to 6, using the report's own examples plus tests of each
+requirement in the text. The suite is portable R7RS: its test library
+`(conformance test)` uses only the standard libraries, so it can be pointed
+at another Scheme. Run it with
+
+    python conformance/run.py                 # both engines
+    python conformance/run.py --engine vm 6.2-numbers.scm
+
+Results, on both the interpreter and the VM: **1273 tests pass, 0 fail**,
+and 14 are expected failures, all of them complex numbers, which R7RS lets
+an implementation leave out (6.2.3). `conformance/UNSUPPORTED.md` lists
+them and what the suite does not cover (the REPL, `exit`, "it is an error"
+cases and unspecified results). The runner fails on any unexpected failure,
+any expected failure that starts passing, or any difference between the two
+engines' output, and the unit tests run it, so CI does too.
+
+Writing the suite found six bugs in tulip, now fixed, each with a regression
+test:
+
+- `(eqv? 0.0 -0.0)` was `#t` (6.1).
+- A circular literal (`'#1=(a . #1#)`) crashed the expander, and a long
+  quoted list, in code or in a `syntax-rules` template, exhausted the Python
+  stack (2.4).
+- `eval` could define into an environment made by `environment`, which
+  must be immutable (6.12).
+- `display` looped forever on circular structure (6.13.3).
+- `write` did not put vertical lines around symbols with non-ASCII
+  characters (6.13.3).
 
 ## Design
 
@@ -178,7 +210,8 @@ Requires Python 3.9 or newer and nothing else. Run the tests with:
 
     python -m unittest discover -s tests
 
-Set `TULIP_ENGINE=vm` to run the same suite on the bytecode VM. Compare the
+Set `TULIP_ENGINE=vm` to run the same suite on the bytecode VM; the
+conformance suite runs as part of it (`tests/test_conformance.py`). Compare the
 engines with `python bench/run.py` (`--markdown` prints the table in
 `bench/RESULTS.md`).
 

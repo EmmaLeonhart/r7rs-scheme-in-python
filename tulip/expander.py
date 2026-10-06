@@ -270,6 +270,7 @@ class Expander:
                 nodes.append(ast.LocalDefine(var, e))
         if not nodes or isinstance(nodes[-1], ast.LocalDefine):
             nodes.append(ast.Const(UNSPECIFIED))
+        _mark_safe_definitions(nodes)
         return nodes
 
     def make_lambda(self, formals, body, scope, name=None):
@@ -299,6 +300,25 @@ class Expander:
 
 
 _SYNTAX_DEFINED = object()
+
+
+def _mark_safe_definitions(nodes):
+    """If a body starts with definitions whose values are all lambda
+    expressions, and no definition follows an expression, then no code runs
+    before every one of them is assigned: making the closures runs nothing.
+    References to those variables then need no "used before definition"
+    check (this is what makes named-let loops cheap)."""
+    defs = []
+    seen_expression = False
+    for n in nodes:
+        if isinstance(n, ast.LocalDefine):
+            if seen_expression or not isinstance(n.expr, ast.Lambda):
+                return
+            defs.append(n)
+        else:
+            seen_expression = True
+    for n in defs:
+        n.var.defined = False
 
 # Core forms whose body-level behavior is special besides define/begin
 # (filled in by stage 2: define-syntax, define-values, ...).

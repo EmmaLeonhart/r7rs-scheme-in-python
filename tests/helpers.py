@@ -11,10 +11,13 @@ from tulip.printer import write_string  # noqa: E402
 from tulip.runtime import Runtime  # noqa: E402
 from tulip.types import SchemeError  # noqa: E402
 
+# Run the suite against the bytecode VM with TULIP_ENGINE=vm.
+ENGINE = os.environ.get("TULIP_ENGINE", "interp")
+
 
 class SchemeTestCase(unittest.TestCase):
     def setUp(self):
-        self.rt = Runtime()
+        self.rt = Runtime(engine=ENGINE)
 
     def ev(self, src):
         return self.rt.eval_string(src)

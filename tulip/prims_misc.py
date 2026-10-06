@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from . import interp
 from .registry import PRIMITIVES, prim
-from .types import (Closure, CaseLambda, ErrorObject, MString,
+from .types import (CaseLambda, ErrorObject, MString,
                     Pair, Primitive, Procedure, Promise, Record, RecordType,
                     SchemeError, Symbol, UNSPECIFIED, list_to_python,
                     make_list, values)
@@ -26,7 +26,7 @@ def procedure_p(x):
 @prim("%case-lambda", 0, rest=True)
 def make_case_lambda(*closures):
     for c in closures:
-        if type(c) is not Closure:
+        if getattr(c, "code", None) is None:     # Closure or vm.VMClosure
             raise SchemeError("case-lambda: clause is not a lambda", c)
     return CaseLambda(list(closures))
 

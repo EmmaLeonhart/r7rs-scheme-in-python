@@ -9,7 +9,7 @@ import sys
 import tempfile
 import unittest
 
-from helpers import SchemeTestCase
+from helpers import ENGINE, SchemeTestCase
 from tulip.prims_system import SchemeExit
 from tulip.runtime import Runtime
 
@@ -54,7 +54,7 @@ class LoadTests(SchemeTestCase):
 
 class ProcessContextTests(SchemeTestCase):
     def test_command_line_and_environment(self):
-        rt = Runtime(["prog.scm", "x"])
+        rt = Runtime(["prog.scm", "x"], engine=ENGINE)
         from tulip.printer import write_string
         self.assertEqual(write_string(rt.eval_string("(command-line)")), '("prog.scm" "x")')
         self.check('(string? (get-environment-variable "PATH"))', "#t")

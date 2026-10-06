@@ -7,7 +7,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from . import expander, interp, libraries, syntax_rules
+from . import expander, interp, libraries, syntax_rules, vm
 from . import (control, prims_data, prims_misc, prims_numbers,  # noqa: F401
                prims_ports, prims_system)
 from .reader import Reader
@@ -21,8 +21,18 @@ _HELPERS = ["memv", "cons", "list", "append", "list->vector", "%make-promise",
             "%record-predicate", "%record-accessor", "%record-modifier"]
 
 
+ENGINES = ("interp", "vm")
+
+
 class Runtime:
-    def __init__(self, argv=()):
+    """``engine`` picks how code runs: "interp" (the reference interpreter)
+    or "vm" (the bytecode compiler and VM). The prelude, user code, ``eval``
+    and ``load`` all use it."""
+
+    def __init__(self, argv=(), engine="interp"):
+        if engine not in ENGINES:
+            raise ValueError("unknown engine %r" % engine)
+        self.engine = engine
         self.argv = list(argv)
         self.machine = interp.Machine()
         self.machine.runtime = self
@@ -61,8 +71,12 @@ class Runtime:
     # --- evaluation ----------------------------------------------------------------
 
     def compile(self, datum, env=None):
+        """Expand and compile a top-level form to a machine node."""
         env = self.env if env is None else env
-        return interp.compile_node(self.expander_for(env).expand_toplevel(datum))
+        node = self.expander_for(env).expand_toplevel(datum)
+        if self.engine == "vm":
+            return vm.VMStart(vm.compile_toplevel(node), None)
+        return interp.compile_node(node)
 
     def eval(self, datum, env=None):
         """Expand, compile and run one top-level form."""

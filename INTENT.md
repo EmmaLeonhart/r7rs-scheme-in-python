@@ -62,7 +62,7 @@ High: the brief is explicit about what to build and in what order.
   WORK MODE (material present, no chat).
 - Stages 1 to 3 done 2026-10-05; stage 4 (bytecode VM, benchmarks) done
   2026-10-06 01:00; stage 5 (conformance suite, 1273 tests per engine, all
-  passing; complex numbers recorded as unsupported) done 2026-10-06 01:33
+  passing; complex numbers recorded as unsupported) done 2026-10-06 01:30
   (times from `date`). The user has said nothing in chat; the plan followed
   the brief unchanged.
 

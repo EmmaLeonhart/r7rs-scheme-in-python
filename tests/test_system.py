@@ -132,6 +132,24 @@ class CLITests(unittest.TestCase):
         self.assertIn("car: not a pair 5", r.stderr)
         self.assertEqual(r.returncode, 70)
 
+    def test_engine_option(self):
+        d = tempfile.mkdtemp(prefix="tulip-test-")
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        prog = os.path.join(d, "prog.scm")
+        with open(prog, "w", encoding="utf-8") as f:
+            f.write("(import (scheme base) (scheme write) (scheme process-context))\n"
+                    "(define (f n) (if (= n 0) 'done (f (- n 1))))\n"
+                    "(write (list (f 10000) (cdr (command-line)))) (newline)\n")
+        for args in (["--engine", "vm"], ["--engine=interp"], ["--engine", "vm", "--"]):
+            r = self.run_tulip(args + [prog, "--engine"])
+            self.assertEqual(r.stdout, '(done ("--engine"))\n', args)
+            self.assertEqual(r.returncode, 0)
+        r = self.run_tulip(["--engine", "jit", prog])
+        self.assertIn("unknown engine", r.stderr)
+        self.assertEqual(r.returncode, 2)
+        r = self.run_tulip(["--engine", "vm"], stdin="(+ 1 2)\n")
+        self.assertEqual(r.stdout, "3\n")
+
     def test_repl(self):
         r = self.run_tulip([], stdin="(values 1 2)\n(car '())\n(define x\n  5)\nx\n(exit 4)\nx\n")
         self.assertEqual(r.stdout, "1\n2\nerror: car: not a pair ()\n5\n")

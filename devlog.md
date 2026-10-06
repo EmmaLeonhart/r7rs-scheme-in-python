@@ -98,3 +98,16 @@ milestones. Newest at the bottom.
   `platform.machine()` cost about 2 s per process on Windows and was dropped
   from `features`.
 - 132 tests pass; a test asserts that every R7RS-small standard name exists.
+
+## 2026-10-06 (stage 4: VM, engines)
+
+- `tulip/vm.py` (commit f5b012d, logged here because that commit left the
+  queue and devlog behind): compiler from the core AST to bytecode, lexical
+  addressing, tail calls, direct `let`-style application, and the VM loop.
+  VM frames are machine continuation frames, so call/cc, dynamic-wind,
+  handlers, parameters and values work unchanged, and VM and interpreter
+  procedures call each other.
+- `Runtime(engine="vm")` compiles the prelude and user code with the VM;
+  `eval` and `load` follow the runtime's engine. New: the CLI takes
+  `--engine interp|vm` before FILE (exit 2 on a bad option).
+- 133 tests pass under both engines (`TULIP_ENGINE=vm`).

@@ -18,13 +18,8 @@ twice is safe. Calls to hot built-ins (`+`, `car`, `<`...) compile to
 specialized opcodes that check at run time that the global still holds the
 built-in and fall back to an ordinary (tail) call otherwise.
 
-1. `tulip/vm.py`: compiler (constants, lexical and global references with
-   lexical addressing, if, sequences, set!/define, lambda, calls and tail
-   calls, `let`-style direct application without a closure) and the VM loop.
 2. Specialized opcodes for hot primitives with a correct fallback, including
    a tail-call fallback in tail position.
-3. `Runtime(engine="vm")`: prelude and user code compiled by the VM;
-   `eval` and `load` follow the runtime's engine; CLI flag `--engine vm`.
 4. The whole test suite runs under both engines (`TULIP_ENGINE=vm`), in CI
    too, plus VM-specific tests (interop with interpreter closures, re-entry
    through VM frames, redefined built-ins).

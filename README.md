@@ -21,7 +21,8 @@ R7RS-small. It is built in stages:
 **Stages 1 to 3 are done**: the interpreter, control and macros, and
 libraries, ports and the REPL. Run a program with
 `python -m tulip program.scm [args...]`, or start the REPL with
-`python -m tulip`.
+`python -m tulip`. Add `--engine vm` (before the file name) to run on the
+bytecode VM instead of the reference interpreter.
 
 ```
 $ python -m tulip
@@ -74,7 +75,8 @@ error, and reads a datum across lines. A program's exit status is its
 A program may start with `import` declarations as R7RS programs do. For
 convenience, a file without them (and the REPL) sees every standard library.
 
-Next: stage 4 (a bytecode compiler and VM); see `todo.md`.
+Stage 4 (a bytecode compiler and VM) is in progress: the VM runs the whole
+test suite; fast paths for hot built-ins and benchmarks are next (`queue.md`).
 
 ## Design
 

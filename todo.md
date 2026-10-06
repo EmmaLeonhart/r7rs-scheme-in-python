@@ -3,10 +3,6 @@
 Abstract destinations, from `data_lake/brief.md`. Each is pulled into
 `queue.md` as concrete steps when its turn comes.
 
-- **Stage 4: bytecode VM.** A compiler from the expanded core language to
-  bytecode, a VM that runs it with proper tail calls and first-class
-  continuations, the interpreter kept as the reference, and benchmarks
-  comparing the two.
 - **Stage 5: conformance.** A suite written from the R7RS-small report,
   section by section, run against both the interpreter and the VM; a record of
   what is not supported and why.

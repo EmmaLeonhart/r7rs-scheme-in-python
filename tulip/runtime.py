@@ -8,7 +8,8 @@ import os
 from pathlib import Path
 
 from . import expander, interp, libraries, syntax_rules
-from . import control, prims_data, prims_misc, prims_numbers  # noqa: F401
+from . import (control, prims_data, prims_misc, prims_numbers,  # noqa: F401
+               prims_ports, prims_system)
 from .reader import Reader
 from .registry import PRIMITIVES
 from .types import EOF, UNSPECIFIED, Environment, make_list, sym

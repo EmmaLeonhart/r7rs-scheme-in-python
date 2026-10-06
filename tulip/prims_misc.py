@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 from . import interp
-from .ports import Port, StringOutputPort, TextOutputPort
-from .printer import display_string, write_string
 from .registry import PRIMITIVES, prim
-from .types import (Closure, CaseLambda, Char, ErrorObject, MString,
+from .types import (Closure, CaseLambda, ErrorObject, MString,
                     Pair, Primitive, Procedure, Promise, Record, RecordType,
                     SchemeError, Symbol, UNSPECIFIED, list_to_python,
                     make_list, values)
@@ -163,95 +161,6 @@ def read_error_p(x):
 @prim("file-error?", 1)
 def file_error_p(x):
     return type(x) is ErrorObject and x.kind == "file"
-
-
-# --- output (minimal; ports proper arrive in stage 3) ------------------------------------
-
-STDOUT = TextOutputPort()
-_current_output = [STDOUT]
-
-
-def _port(args, who):
-    if not args:
-        return _current_output[0]
-    p = args[0]
-    if not isinstance(p, Port) or not p.output:
-        raise SchemeError("%s: not an output port" % who, p)
-    return p
-
-
-@prim("current-output-port", 0)
-def current_output_port():
-    return _current_output[0]
-
-
-@prim("display", 1, 1)
-def display(obj, *port):
-    _port(port, "display").write(display_string(obj))
-    return UNSPECIFIED
-
-
-@prim("write", 1, 1)
-def write(obj, *port):
-    _port(port, "write").write(write_string(obj))
-    return UNSPECIFIED
-
-
-@prim("write-shared", 1, 1)
-def write_shared(obj, *port):
-    _port(port, "write-shared").write(write_string(obj, "shared"))
-    return UNSPECIFIED
-
-
-@prim("write-simple", 1, 1)
-def write_simple(obj, *port):
-    _port(port, "write-simple").write(write_string(obj, "simple"))
-    return UNSPECIFIED
-
-
-@prim("newline", 0, 1)
-def newline(*port):
-    _port(port, "newline").write("\n")
-    return UNSPECIFIED
-
-
-@prim("write-char", 1, 1)
-def write_char(c, *port):
-    if type(c) is not Char:
-        raise SchemeError("write-char: not a character", c)
-    _port(port, "write-char").write(c.ch)
-    return UNSPECIFIED
-
-
-@prim("write-string", 1, 3)
-def write_string_(s, *rest):
-    if type(s) is not MString:
-        raise SchemeError("write-string: not a string", s)
-    text = s.s
-    if len(rest) > 1:
-        start = rest[1]
-        end = rest[2] if len(rest) > 2 else len(text)
-        text = text[start:end]
-    _port(rest[:1], "write-string").write(text)
-    return UNSPECIFIED
-
-
-@prim("open-output-string", 0)
-def open_output_string():
-    return StringOutputPort()
-
-
-@prim("get-output-string", 1)
-def get_output_string(p):
-    if not isinstance(p, StringOutputPort):
-        raise SchemeError("get-output-string: not a string output port", p)
-    return MString(p.getvalue())
-
-
-@prim("flush-output-port", 0, 1)
-def flush_output_port(*port):
-    _port(port, "flush-output-port").flush()
-    return UNSPECIFIED
 
 
 # --- helpers for the prelude's multi-list map/for-each -----------------------------

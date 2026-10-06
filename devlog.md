@@ -75,3 +75,26 @@ milestones. Newest at the bottom.
   top-level forms to re-run after re-entering a continuation). Fixed the
   tests and recorded the top-level behavior as a limit in the README.
 - 93 tests pass.
+
+## 2026-10-05 (stage 3 done)
+
+- Libraries (`tulip/libraries.py`): per-library environments, imports share
+  cells (live bindings), all R7RS-small standard libraries as export lists
+  over the system environment, import sets, define-library with every
+  declaration kind, `name/part.sld` lookup on a search path, cond-expand,
+  include/include-ci, features, syntax-error. User code now has its own
+  environment: redefining `if` no longer breaks `cond`.
+- Ports (`tulip/ports.py`, `tulip/prims_ports.py`): textual/binary,
+  string/bytevector/file/console; current ports are parameters; `read` on
+  the console fills line by line until a datum is complete.
+- `tulip/prims_system.py`: eval (a tail call), environment,
+  interaction-environment, scheme-report-environment/null-environment, load,
+  command-line, exit (runs pending after thunks via an empty-state
+  continuation), emergency-exit, environment variables, time, and the
+  real-number subset of (scheme complex).
+- CLI: arguments reach `command-line`; exit status from `exit`, 70 after an
+  uncaught error. REPL prints multiple values and survives errors.
+- Fixes on the way: `port?` was missing from the (scheme base) export list;
+  `platform.machine()` cost about 2 s per process on Windows and was dropped
+  from `features`.
+- 137 tests pass; a test asserts that every R7RS-small standard name exists.

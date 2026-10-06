@@ -47,7 +47,7 @@ make-bytevector make-list make-parameter make-string make-vector map max
 member memq memv min modulo negative? newline not null? number->string
 number? numerator odd? open-input-bytevector open-input-string
 open-output-bytevector open-output-string or output-port-open? output-port?
-pair? parameterize peek-char peek-u8 positive? procedure? quasiquote quote
+pair? parameterize peek-char peek-u8 port? positive? procedure? quasiquote quote
 quotient raise raise-continuable rational? rationalize read-bytevector
 read-bytevector! read-char read-error? read-line read-string read-u8 real?
 remainder reverse round set! set-car! set-cdr! square string string->list

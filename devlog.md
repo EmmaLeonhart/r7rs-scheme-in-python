@@ -97,4 +97,4 @@ milestones. Newest at the bottom.
 - Fixes on the way: `port?` was missing from the (scheme base) export list;
   `platform.machine()` cost about 2 s per process on Windows and was dropped
   from `features`.
-- 137 tests pass; a test asserts that every R7RS-small standard name exists.
+- 132 tests pass; a test asserts that every R7RS-small standard name exists.

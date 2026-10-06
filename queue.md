@@ -17,6 +17,7 @@ it so CI covers it. Anything the report requires that tulip does not do is
 recorded in `conformance/UNSUPPORTED.md` with the section and the reason,
 and the test is marked as an expected failure there rather than deleted.
 
-7. Chapter 6.10 to 6.14: control, exceptions, eval, I/O, system interface.
+7. Chapter 6.13 and 6.14: I/O and the system interface (6.10 to 6.12 are
+   done).
 8. Fix what the suite finds (each fix with a regression test), record what
    stays unsupported, and write up the results in the README.

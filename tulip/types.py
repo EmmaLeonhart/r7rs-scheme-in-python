@@ -304,6 +304,9 @@ class Environment:
         self.syntax: dict = {}    # Symbol -> expander binding (keywords, macros)
         self.imported: set = set()  # variables imported from a library
         self.expander = None      # set by the runtime
+        # environments made by (environment ...) are immutable (6.12):
+        # definitions in them are errors
+        self.immutable = False
 
     def cell(self, symbol: Symbol) -> "Cell":
         c = self.cells.get(symbol)

@@ -11,8 +11,8 @@ identifier in the template means what it meant where the macro was defined.
 from __future__ import annotations
 
 from . import ast
-from .expander import (Alias, CoreForm, Macro, Scope, base_symbol, form_list,
-                       is_identifier, lookup, same_binding, syntax_error,
+from .expander import (Alias, CoreForm, Macro, Scope, base_symbol, check_mutable,
+                       form_list, is_identifier, lookup, same_binding, syntax_error,
                        BODY_DEFINERS)
 from .prims_data import equal
 from .types import NIL, UNSPECIFIED, Pair, make_list, sym
@@ -247,6 +247,7 @@ def _define_syntax(exp, form, scope):
         raise syntax_error("bad define-syntax", form)
     if isinstance(scope, Scope):
         raise syntax_error("define-syntax in expression context", form)
+    check_mutable(scope, form)
     macro = make_transformer(exp, args[1], scope, args[0])
     scope.syntax[base_symbol(args[0])] = macro
     return ast.Const(UNSPECIFIED)

@@ -36,8 +36,15 @@ class EvalTests(SchemeTestCase):
                    " (f 20000)", "done")
 
     def test_environment_isolation(self):
-        self.check("(define e (environment '(scheme base))) (eval '(define z 1) e)"
-                   " (guard (x (#t 'not-here)) z)", "not-here")
+        # environments from (environment ...) are immutable (6.12): defining
+        # in one is an error, and nothing leaks into the caller's environment
+        self.check("(define e (environment '(scheme base)))"
+                   " (list (guard (x (#t 'refused)) (eval '(define z 1) e))"
+                   "       (guard (x (#t 'refused)) (eval '(define-syntax m (syntax-rules ())) e))"
+                   "       (guard (x (#t 'refused)) (eval '(define-values (p q) (values 1 2)) e))"
+                   "       (guard (x (#t 'not-here)) z))",
+                   "(refused refused refused not-here)")
+        self.check("(eval '(begin (define r5 1) r5) (scheme-report-environment 5))", "1")
 
 
 class LoadTests(SchemeTestCase):

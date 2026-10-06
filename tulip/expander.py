@@ -420,9 +420,15 @@ def _if(exp, form, scope):
     raise syntax_error("bad if", form)
 
 
+def check_mutable(env, form):
+    if env.immutable:
+        raise syntax_error("definition in an immutable environment", form)
+
+
 def _define(exp, form, scope):
     if isinstance(scope, Scope):
         raise syntax_error("definition in expression context", form)
+    check_mutable(scope, form)
     name, rhs = parse_define(form)
     symbol = base_symbol(name)
     scope.syntax.pop(symbol, None)

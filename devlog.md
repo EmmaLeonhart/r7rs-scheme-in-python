@@ -241,3 +241,20 @@ milestones. Newest at the bottom.
   including UTF-8 conversion outside the BMP). All pass on both engines with
   no tulip changes; four mistakes in the first drafts of the tests were
   fixed before they were recorded.
+
+## 2026-10-06 (stage 5: 6.10 to 6.12, immutable environments)
+
+- `6.10-control.scm` (75 tests): apply, map/for-each and the string and
+  vector variants (unequal lengths, circular lists), call/cc including
+  re-entry, values, dynamic-wind (the report's connect/talk example, nesting
+  order on re-entry, unwinding through guard), with-exception-handler,
+  raise/raise-continuable and the secondary exception, error objects,
+  read-error? and file-error?, eval with environment, null-environment,
+  scheme-report-environment and interaction-environment.
+- Found and fixed: `(eval '(define foo 32) (environment '(scheme base)))`
+  must signal an error (6.12: those environments are immutable) and tulip
+  accepted it. Environments now have an `immutable` flag, set by
+  `environment`; `define` and `define-syntax` (and so `define-values` and
+  `define-record-type`) refuse to define in them. `test_environment_isolation`
+  was updated to expect the error; scheme-report-environment stays mutable
+  (6.12 leaves it unspecified).

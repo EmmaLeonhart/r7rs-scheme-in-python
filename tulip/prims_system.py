@@ -46,7 +46,9 @@ def eval_(m, args):
 
 @control("environment", 0, rest=True)
 def environment(m, args):
-    m.val = m.runtime.new_environment(args, "eval")
+    env = m.runtime.new_environment(args, "eval")
+    env.immutable = True
+    m.val = env
     m.node = None
 
 

@@ -85,3 +85,7 @@ work. Not queued, on purpose:
   09:19 UTC (jobs refused, not failing). It is running again: the run at
   09:19 UTC passed all eight jobs, including Python 3.9 on both operating
   systems, which had only been checked by parsing until then.
+- To watch: GitHub moves `ubuntu-latest` to Ubuntu 26 from 2026-10-19
+  (runner notice). If Python 3.9 is not available there, the Ubuntu 3.9 jobs
+  will fail to set up; the fix would be pinning `ubuntu-24.04` for them.
+  Nothing to do before then.

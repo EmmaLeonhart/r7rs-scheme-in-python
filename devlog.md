@@ -162,3 +162,20 @@ milestones. Newest at the bottom.
 - Fetched the R7RS-small report (July 6, 2013) into
   `data_lake/downloads/r7rs.pdf`, with its source and copying permission in
   `data_lake/downloads/SOURCES.md`. INTENT.md updated (timeline, source).
+
+## 2026-10-06 (stage 5: harness, chapters 2 and 3)
+
+- `conformance/conformance/test.sld`: the `(conformance test)` library in
+  portable R7RS (`test`, `test-approx`, `test-values`, `test-error`,
+  `test-assert`, `test-unsupported` for recorded gaps, `test-report`).
+- `conformance/run.py`: runs each section file on both engines through the
+  CLI, reports pass/fail/xfail/xpass per file, and fails on any FAIL, XPASS,
+  crash, or difference between the engines' outputs.
+  `tests/test_conformance.py` checks the harness and runs the suite on the
+  engine under test, so CI covers it.
+- `2-lexical.scm` (identifiers, fold-case directives, comments, other
+  notations, datum labels) and `3-basic.scm` (regions, disjointness of
+  types, external representations, storage, tail calls in every tail context
+  of 3.5): 132 tests, all passing on both engines. Two first-run failures
+  were mistakes in the tests (an ill-formed `a#|x|#b`, an undeclared record
+  field), fixed in the tests.

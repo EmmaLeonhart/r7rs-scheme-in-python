@@ -17,11 +17,6 @@ it so CI covers it. Anything the report requires that tulip does not do is
 recorded in `conformance/UNSUPPORTED.md` with the section and the reason,
 and the test is marked as an expected failure there rather than deleted.
 
-2. `conformance/test.sld` (the test library), `conformance/run.py` (both
-   engines, per-section results, exit 1 on unexpected failure), and a unittest
-   that runs it.
-3. Chapters 2 and 3: lexical conventions, datum labels, disjointness of
-   types, proper tail recursion (deep loops in every tail context 3.5 lists).
 4. Chapter 4: primitive and derived expressions, quasiquote, case-lambda,
    parameterize, guard, delay/force, macros (4.3).
 5. Chapter 5: programs, import, definitions, define-record-type, libraries.

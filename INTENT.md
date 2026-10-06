@@ -43,9 +43,9 @@ different than expected, the plan changes and the reason is written down.
 - Target Python 3.9+ (cleanvibe's own floor); developed on Python 3.13.
 - Package name `pyscheme` was rejected as too generic; the package is `tulip`
   (after the folder), a working name that is easy to change.
-- The R7RS report text is not in the folder. The conformance suite is written
-  from the published R7RS-small report section by section (r7rs.org); if a
-  copy is fetched it goes in `data_lake/downloads/`.
+- The conformance suite is written from the R7RS-small report, fetched on
+  2026-10-06 into `data_lake/downloads/r7rs.pdf` (the report permits
+  copying; see `data_lake/downloads/SOURCES.md`).
 
 ## Open questions
 
@@ -60,3 +60,6 @@ High: the brief is explicit about what to build and in what order.
 
 - Work mode started 2026-10-05 22:45 PST (from `date`), by the intake verdict
   WORK MODE (material present, no chat).
+- Stages 1 to 3 done 2026-10-05; stage 4 (bytecode VM, benchmarks) done
+  2026-10-06 01:00 (from `date`). Stage 5 (conformance) under way. The user
+  has still said nothing in chat; the plan follows the brief unchanged.

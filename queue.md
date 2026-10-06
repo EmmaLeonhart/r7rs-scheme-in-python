@@ -17,8 +17,6 @@ it so CI covers it. Anything the report requires that tulip does not do is
 recorded in `conformance/UNSUPPORTED.md` with the section and the reason,
 and the test is marked as an expected failure there rather than deleted.
 
-1. Fetch the R7RS-small report into `data_lake/downloads/` (it permits
-   copying) and record its source and date.
 2. `conformance/test.sld` (the test library), `conformance/run.py` (both
    engines, per-section results, exit 1 on unexpected failure), and a unittest
    that runs it.

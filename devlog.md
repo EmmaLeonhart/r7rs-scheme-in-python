@@ -156,3 +156,9 @@ milestones. Newest at the bottom.
   Development.
 - Stage 5 (conformance) moved from `todo.md` into `queue.md` as concrete
   steps.
+
+## 2026-10-06 (stage 5: the report)
+
+- Fetched the R7RS-small report (July 6, 2013) into
+  `data_lake/downloads/r7rs.pdf`, with its source and copying permission in
+  `data_lake/downloads/SOURCES.md`. INTENT.md updated (timeline, source).

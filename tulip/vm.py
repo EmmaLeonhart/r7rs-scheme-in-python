@@ -27,10 +27,11 @@ to an ordinary call, which is a tail call when the original call was one.
 from __future__ import annotations
 
 from . import ast
-from .interp import APPLIERS, apply_procedure, arity_error
+from .control import Continuation
+from .interp import APPLIERS, APPLY, apply_procedure, arity_error, spread_args
 from .registry import PRIMITIVES
 from .types import (NIL, UNASSIGNED, UNBOUND, UNSPECIFIED, Pair, Primitive,
-                    Procedure, SchemeError, make_list)
+                    Procedure, SchemeError, make_list, values)
 
 # --- opcodes ---------------------------------------------------------------------------
 
@@ -59,6 +60,7 @@ def _fast_tables():
 
 
 FAST2, FAST1 = _fast_tables()
+CALL_CC = PRIMITIVES["call-with-current-continuation"]
 
 
 # --- runtime objects ---------------------------------------------------------------------
@@ -334,39 +336,70 @@ def run(m, code, pc, env, stack):
             continue
 
         # --- a call: f applied to args, as a tail call if ``tail`` ---------------------
-        tf = type(f)
-        if tf is VMClosure:
-            c = f.code
-            n = len(args)
-            new = [f.env]
-            if c.rest:
-                if n < c.nreq:
+        # ``apply``, ``call/cc`` and continuations that need no winding are
+        # handled here rather than through the machine, so that the loop is
+        # not left and re-entered for each of them.
+        while True:
+            tf = type(f)
+            if tf is VMClosure:
+                c = f.code
+                n = len(args)
+                new = [f.env]
+                if c.rest:
+                    if n < c.nreq:
+                        raise arity_error(f, n)
+                    new.extend(args[:c.nreq])
+                    new.append(make_list(args[c.nreq:]))
+                else:
+                    if n != c.nreq:
+                        raise arity_error(f, n)
+                    new.extend(args)
+                if c.nslots:
+                    new.extend([UNASSIGNED] * c.nslots)
+                if not tail:
+                    m.k = VMFrame(code, pc, env, tuple(stack), m.k)
+                code = c
+                ops = c.ops
+                oargs = c.args
+                pc = 0
+                env = new
+                stack = []
+                break
+            if tf is Primitive:
+                n = len(args)
+                if n < f.nreq or (n > f.nreq + f.nopt and not f.rest):
                     raise arity_error(f, n)
-                new.extend(args[:c.nreq])
-                new.append(make_list(args[c.nreq:]))
-            else:
-                if n != c.nreq:
-                    raise arity_error(f, n)
-                new.extend(args)
-            if c.nslots:
-                new.extend([UNASSIGNED] * c.nslots)
-            if not tail:
-                m.k = VMFrame(code, pc, env, tuple(stack), m.k)
-            code = c
-            ops = c.ops
-            oargs = c.args
-            pc = 0
-            env = new
-            stack = []
-            continue
-        if tf is Primitive:
-            n = len(args)
-            if n < f.nreq or (n > f.nreq + f.nopt and not f.rest):
-                raise arity_error(f, n)
-            v = f.fn(*args)
-            if not tail:
-                stack.append(v)
+                v = f.fn(*args)
+                if not tail:
+                    stack.append(v)
+                    break
+            elif f is APPLY:
+                if len(args) < 2:
+                    raise arity_error(f, len(args))
+                f = args[0]
+                args = spread_args(args[1:])
                 continue
+            elif f is CALL_CC:
+                if len(args) != 1:
+                    raise arity_error(f, len(args))
+                if not tail:
+                    m.k = VMFrame(code, pc, env, tuple(stack), m.k)
+                    tail = True
+                f = args[0]
+                args = [Continuation(m.k, m.winders, m.handlers, m.params)]
+                continue
+            elif tf is Continuation and f.winders is m.winders:
+                m.k = f.k
+                m.handlers = f.handlers
+                m.params = f.params
+                v = values(*args)
+            else:
+                # anything else goes through the machine
+                if not tail:
+                    m.k = VMFrame(code, pc, env, tuple(stack), m.k)
+                apply_procedure(m, f, args)
+                return
+            # deliver v to the continuation m.k
             k = m.k
             if type(k) is VMFrame:
                 m.k = k.next
@@ -377,15 +410,10 @@ def run(m, code, pc, env, stack):
                 env = k.env
                 stack = list(k.stack)
                 stack.append(v)
-                continue
+                break
             m.val = v
             m.node = None
             return
-        # anything else goes through the machine
-        if not tail:
-            m.k = VMFrame(code, pc, env, tuple(stack), m.k)
-        apply_procedure(m, f, args)
-        return
 
 
 # --- the compiler -------------------------------------------------------------------------------

@@ -135,3 +135,15 @@ milestones. Newest at the bottom.
 - `bench/RESULTS.md`: the VM is 1.85x faster in total; 2 to 2.5x on calls
   and fixnum arithmetic, 1.36x on `closures` and 1.09x on `callcc`. Those
   two are queued for profiling.
+
+## 2026-10-06 (stage 4: profiling closures and call/cc)
+
+- Profile: `closures` and `callcc` re-entered the VM loop 90,000 and 120,000
+  times, because `apply`, `call/cc` and continuation calls went through the
+  machine. The VM now handles them in the loop (a continuation only when its
+  winders are the current ones, so `dynamic-wind` still goes through the
+  machine). `callcc` 1.09x -> 1.32x, `closures` 1.36x -> 1.43x; the rest is
+  ordinary dispatch on closure calls, recorded in `bench/RESULTS.md`.
+- `tests/test_vm.py`: parity tests for the in-loop paths (arity errors,
+  multiple values, re-entry, parameters, raise-continuable) and 50,000-deep
+  `apply` and `call/cc` loops. 147 tests pass under both engines.

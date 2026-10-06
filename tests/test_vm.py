@@ -170,6 +170,37 @@ class InteropTests(VMTestCase):
             "  (reverse (car log)))"), "(in out)")
 
 
+class InLoopCallTests(VMTestCase):
+    """``apply``, ``call/cc`` and continuations without winding are handled
+    inside the VM loop; they must behave as they do through the machine."""
+
+    def test_parity(self):
+        for src in ["(apply + 1 2 '(3 4))", "(apply list '())", "(apply apply list 1 '((2)))",
+                    "(apply car '(1))", "(apply +)", "(apply + 1 2)", "(call/cc)",
+                    "(call/cc 5)", "(+ 1 (call/cc (lambda (k) (k 2))))",
+                    "(+ 1 (call/cc (lambda (k) 2)))",
+                    "(call-with-values (lambda () (call/cc (lambda (k) (k 1 2)))) list)",
+                    "(list 1 (call/cc (lambda (k) (apply k '(2)))) 3)",
+                    "(let ((k2 #f) (n 0))"
+                    "  (list (call/cc (lambda (k) (set! k2 k) 0))"
+                    "        (begin (set! n (+ n 1)) (if (< n 3) (k2 n) n))))",
+                    "(parameterize ((make-parameter 1) 2)"
+                    "  (call/cc (lambda (k) (k 'ok))))",
+                    "(let ((p (make-parameter 1)))"
+                    "  (list (call/cc (lambda (out) (parameterize ((p 2)) (out (p))))) (p)))",
+                    "(with-exception-handler (lambda (e) 10)"
+                    "  (lambda () (+ 1 (raise-continuable (call/cc (lambda (k) (k 'x)))))))"]:
+            with self.subTest(src=src):
+                self.same(src)
+
+    def test_deep_apply_and_call_cc_loops(self):
+        self.assertEqual(self.w(
+            "(let loop ((i 0)) (if (= i 50000) 'done (apply loop (list (+ i 1)))))"), "done")
+        self.assertEqual(self.w(
+            "(let loop ((i 0)) (if (= i 50000) 'done (call/cc (lambda (k) (loop (+ i 1))))))"),
+            "done")
+
+
 class ReentryTests(VMTestCase):
     def test_reentry_restores_pending_operands(self):
         src = ("(let ((k #f) (count 0) (results '()))"

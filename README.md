@@ -18,8 +18,8 @@ R7RS-small. It is built in stages:
 
 ## Status
 
-**Stages 1 to 3 are done**: the interpreter, control and macros, and
-libraries, ports and the REPL. Run a program with
+**Stages 1 to 4 are done**: the interpreter, control and macros,
+libraries, ports and the REPL, and the bytecode VM. Run a program with
 `python -m tulip program.scm [args...]`, or start the REPL with
 `python -m tulip`. Add `--engine vm` (before the file name) to run on the
 bytecode VM instead of the reference interpreter.
@@ -75,14 +75,17 @@ error, and reads a datum across lines. A program's exit status is its
 A program may start with `import` declarations as R7RS programs do. For
 convenience, a file without them (and the REPL) sees every standard library.
 
-Stage 4 (a bytecode compiler and VM) is in progress: the VM runs the whole
-test suite; fast paths for hot built-ins and benchmarks are next (`queue.md`).
+Next: stage 5, a conformance suite written from the R7RS report (`todo.md`).
 
 ## Design
 
 ```
 text --reader--> data --expander--> core AST --compile--> nodes --machine--> value
+                                                 \--vm.compile--> bytecode --VM loop--/
 ```
+
+The two engines share everything up to the core AST, and the same machine:
+the VM is a second way to run code on it, not a separate runtime.
 
 - **Reader** (`tulip/reader.py`): text to Scheme data. Pairs are `Pair`,
   the empty list is `NIL`, strings are mutable `MString`, vectors are Python
@@ -115,6 +118,21 @@ text --reader--> data --expander--> core AST --compile--> nodes --machine--> val
   All built-ins live in one system environment and the standard libraries
   export parts of it; user code has its own environment, so redefining `if`
   or `list` there leaves the built-in macros alone.
+- **Bytecode VM** (`tulip/vm.py`, `--engine vm`): compiles the same core
+  AST to code objects (parallel lists of opcodes and operands, lexical
+  addresses as in the interpreter) for a stack machine, run by one Python
+  loop that keeps `code`, `pc`, `env` and the operand stack in locals.
+  Calls and returns between VM closures stay in the loop, as do `apply`,
+  `call/cc` and continuation calls that cross no `dynamic-wind`. A non-tail
+  call pushes a `VMFrame`, which is an ordinary machine continuation frame,
+  so call/cc, dynamic-wind, handlers and parameters work unchanged and VM
+  and interpreter procedures call each other. A frame saves the pending
+  operand stack as a tuple, so re-entering a continuation twice is safe.
+  Calls to hot built-ins (`+`, `car`, `<`, `cons`, `null?`...) compile to
+  specialized opcodes that check at run time that the global still holds the
+  built-in (and, for arithmetic, that the operands are fixnums) and otherwise
+  make an ordinary call, a tail call in tail position. The interpreter stays
+  the reference: the whole test suite runs on both, in CI too.
 - **Primitives** are Python functions (`tulip/prims_*.py`); procedures that
   call other procedures (`map`, `for-each`, `member` with a predicate,
   `force`...) are written in Scheme in `tulip/prelude.scm`, so continuations
@@ -124,9 +142,12 @@ text --reader--> data --expander--> core AST --compile--> nodes --machine--> val
 
 - **No complex numbers.** `1+2i` is rejected by the reader, and `(sqrt -4)`,
   `(log -1)` and the like raise an error rather than return a complex result.
-- **Speed.** This is the reference interpreter: a million-iteration loop
-  takes about 3 seconds on a desktop machine. Stage 4's bytecode VM is
-  meant to improve on that.
+- **Speed.** On the benchmarks in `bench/` the VM is about 1.9 times as
+  fast as the interpreter overall: 2 to 2.6 times on calls and fixnum
+  arithmetic, 1.3 to 1.5 times on closure-heavy and call/cc-heavy code
+  (`bench/RESULTS.md`). A 300,000-iteration loop takes about 0.6 s on the
+  VM and 1.5 s on the interpreter on a desktop machine. Both are tree- or
+  bytecode-walking loops in Python; there is no native code generation.
 - **Literal strings are immutable** (`string-set!` on a literal is an error,
   as R7RS permits); strings made by `make-string`, `string-copy` and so on
   are mutable.
@@ -156,6 +177,10 @@ text --reader--> data --expander--> core AST --compile--> nodes --machine--> val
 Requires Python 3.9 or newer and nothing else. Run the tests with:
 
     python -m unittest discover -s tests
+
+Set `TULIP_ENGINE=vm` to run the same suite on the bytecode VM. Compare the
+engines with `python bench/run.py` (`--markdown` prints the table in
+`bench/RESULTS.md`).
 
 ## Working on it
 

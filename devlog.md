@@ -147,3 +147,12 @@ milestones. Newest at the bottom.
 - `tests/test_vm.py`: parity tests for the in-loop paths (arity errors,
   multiple values, re-entry, parameters, raise-continuable) and 50,000-deep
   `apply` and `call/cc` loops. 147 tests pass under both engines.
+
+## 2026-10-06 (stage 4 done)
+
+- README: the VM in the design section (shared AST and machine, frames,
+  fast opcodes and their fallbacks, what stays in the loop), the benchmark
+  numbers in the limits section, `TULIP_ENGINE=vm` and `bench/run.py` under
+  Development.
+- Stage 5 (conformance) moved from `todo.md` into `queue.md` as concrete
+  steps.

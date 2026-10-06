@@ -3,19 +3,32 @@
 Delete-only: a finished item is deleted here and recorded in `devlog.md` in the
 same commit. Long-horizon goals are in `todo.md`.
 
-## Stage 4: bytecode VM
+## Stage 5: conformance
 
-Design for this stage: a compiler from the core AST (the same one the
-interpreter uses, so the expander is shared) to bytecode for a stack VM. Code
-objects hold parallel lists of opcodes and operands; the VM runs them in one
-Python loop with the hot locals (`code`, `pc`, `env`, `stack`) in Python
-locals. VM-to-VM calls and returns stay inside the loop. A non-tail call pushes
-a `VMFrame`, which *is* a machine continuation frame (it has `resume(m)` and
-`next`), so `call/cc`, `dynamic-wind`, handlers, parameters and `values` work
-unchanged, and VM code and interpreter code can call each other. A frame's
-pending operand stack is saved as a tuple, so re-entering a continuation
-twice is safe. Calls to hot built-ins (`+`, `car`, `<`...) compile to
-specialized opcodes that check at run time that the global still holds the
-built-in and fall back to an ordinary (tail) call otherwise.
+Design for this stage: a conformance suite under `conformance/`, one Scheme
+file per section of the R7RS-small report (chapters 2 to 6, plus the
+derived-forms and library chapters where they say something testable),
+written from the report's text and examples rather than from tulip's own
+behavior. Each file uses a small test library `(conformance test)` with
+`test`, `test-error`, `test-values` and `section`, written in portable R7RS
+so the suite could run on another implementation. A runner runs every file
+on both engines and reports pass/fail per section; the unittest suite calls
+it so CI covers it. Anything the report requires that tulip does not do is
+recorded in `conformance/UNSUPPORTED.md` with the section and the reason,
+and the test is marked as an expected failure there rather than deleted.
 
-6. Stage 4 wrap-up: README design and numbers, devlog, check stage 5.
+1. Fetch the R7RS-small report into `data_lake/downloads/` (it permits
+   copying) and record its source and date.
+2. `conformance/test.sld` (the test library), `conformance/run.py` (both
+   engines, per-section results, exit 1 on unexpected failure), and a unittest
+   that runs it.
+3. Chapters 2 and 3: lexical conventions, datum labels, disjointness of
+   types, proper tail recursion (deep loops in every tail context 3.5 lists).
+4. Chapter 4: primitive and derived expressions, quasiquote, case-lambda,
+   parameterize, guard, delay/force, macros (4.3).
+5. Chapter 5: programs, import, definitions, define-record-type, libraries.
+6. Chapter 6.1 to 6.9: equivalence, numbers, booleans, lists, symbols,
+   characters, strings, vectors, bytevectors.
+7. Chapter 6.10 to 6.14: control, exceptions, eval, I/O, system interface.
+8. Fix what the suite finds (each fix with a regression test), record what
+   stays unsupported, and write up the results in the README.

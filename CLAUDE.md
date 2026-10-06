@@ -210,7 +210,7 @@ Workflow behaviors live as skills in `.claude/skills/` (auto-discovered by Claud
 `research-practice`, `writing-style`, `cleanvibe-update-check`. They are vendored into this repo and kept
 current by the `cleanvibe-update-check` skill.
 
-- **Last cleanvibe update check:** `never`
+- **Last cleanvibe update check:** `2026-10-05` (v2.0.4; skills already current)
 - **Updates source:** <https://cleanvibe.emmaleonhart.com/updates.md>
 
 ## Long command series run in strict order

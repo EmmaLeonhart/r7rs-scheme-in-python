@@ -5,16 +5,58 @@ analysis, not a transcript, and it changes as understanding improves._
 
 ## Current understanding
 
-Not known yet. The project was created without a name (`silver-jolly-tulip` is a random generated passphrase), so the directory says nothing about its purpose.
+Build a Scheme implementation in pure Python (standard library only) that aims
+at R7RS-small, in the five stages `data_lake/brief.md` lays out:
+
+1. Interpreter: reader, core special forms, proper tail calls, numeric tower
+   (exact integers and rationals, inexact reals), strings, characters, vectors,
+   bytevectors, standard procedures.
+2. call/cc and dynamic-wind, exceptions (raise, guard,
+   with-exception-handler), multiple values, hygienic syntax-rules.
+3. Libraries (define-library, import), ports and file I/O, a REPL.
+4. A compiler from the expanded core language to a bytecode VM, with the
+   interpreter kept as the reference, and benchmarks comparing the two.
+5. A conformance suite written from the R7RS report, section by section, that
+   both the interpreter and the VM pass, with unsupported features recorded.
+
+The README documents the design and its limits. If a stage turns out harder or
+different than expected, the plan changes and the reason is written down.
 
 ## What supports it
 
-_Nothing yet._
+- `data_lake/brief.md`, the only material in the folder, is a spec that states
+  this outright. The brief says "This is a long project: work through it in
+  stages and keep going after each one."
+- The folder name `silver-jolly-tulip` is generated and carries no meaning.
+- The user has said nothing in chat (intake report, 2026-10-05 22:45).
+
+## Constraints from the user
+
+- The implementation uses only the Python standard library (from the brief).
+- From the starting prompt: the repo is private; don't invent work beyond what
+  the material says.
+
+## Assumptions (made without the user; revisit if they say otherwise)
+
+- Tests use stdlib `unittest`, not pytest, so that "standard library only"
+  holds for the test suite as well.
+- Target Python 3.9+ (cleanvibe's own floor); developed on Python 3.13.
+- Package name `pyscheme` was rejected as too generic; the package is `tulip`
+  (after the folder), a working name that is easy to change.
+- The R7RS report text is not in the folder. The conformance suite is written
+  from the published R7RS-small report section by section (r7rs.org); if a
+  copy is fetched it goes in `data_lake/downloads/`.
 
 ## Open questions
 
-- What is this project for?
+- None blocking. A different package name or Python version floor would be
+  easy to change early.
 
 ## Confidence
 
-None yet.
+High: the brief is explicit about what to build and in what order.
+
+## Timeline
+
+- Work mode started 2026-10-05 22:45 PST (from `date`), by the intake verdict
+  WORK MODE (material present, no chat).

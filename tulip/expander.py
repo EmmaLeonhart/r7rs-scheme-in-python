@@ -19,8 +19,8 @@ from __future__ import annotations
 from collections import deque
 
 from . import ast
-from .types import (NIL, UNSPECIFIED, Environment, Pair, SchemeError, Symbol,
-                    make_list, sym)
+from .types import (NIL, UNSPECIFIED, Cell, Environment, Pair, SchemeError,
+                    Symbol, make_list, sym)
 
 
 # --- identifiers and bindings ---------------------------------------------------
@@ -179,8 +179,9 @@ def L(*items):
 # --- the expander ---------------------------------------------------------------
 
 class Expander:
-    def __init__(self, env: Environment):
+    def __init__(self, env: Environment, runtime=None):
         self.env = env
+        self.runtime = runtime
 
     def expand_toplevel(self, form):
         return self.expand(form, self.env)
@@ -360,6 +361,9 @@ def _define(exp, form, scope):
     name, rhs = parse_define(form)
     symbol = base_symbol(name)
     scope.syntax.pop(symbol, None)
+    if symbol in scope.imported:
+        scope.imported.discard(symbol)
+        scope.cells[symbol] = Cell(symbol)
     cell = scope.cell(symbol)
     e = exp.expand(rhs, scope)
     name_lambda(e, symbol)
@@ -376,6 +380,8 @@ def _set(exp, form, scope):
         b.assigned = True
         return ast.LocalSet(b, e)
     if isinstance(b, GlobalBinding):
+        if b.symbol in b.env.imported:
+            raise syntax_error("set! of an imported variable", form)
         return ast.GlobalSet(b.env.cell(b.symbol), e)
     raise syntax_error("set! of a keyword", form)
 

@@ -292,12 +292,18 @@ class Record:
 
 
 class Environment:
-    """A global (top-level) environment: values plus syntactic bindings."""
+    """A global (top-level) environment: values plus syntactic bindings.
+
+    An imported variable's cell is the exporting library's own cell. A
+    top-level ``define`` of an imported name gives this environment a fresh
+    cell instead (REPL-style shadowing); ``set!`` of one is an error."""
 
     def __init__(self, name="user"):
         self.name = name
         self.cells: dict = {}     # Symbol -> Cell
         self.syntax: dict = {}    # Symbol -> expander binding (keywords, macros)
+        self.imported: set = set()  # variables imported from a library
+        self.expander = None      # set by the runtime
 
     def cell(self, symbol: Symbol) -> "Cell":
         c = self.cells.get(symbol)
@@ -310,6 +316,9 @@ class Environment:
         if isinstance(name, str):
             name = sym(name)
         self.syntax.pop(name, None)
+        if name in self.imported:
+            self.imported.discard(name)
+            self.cells[name] = Cell(name)
         self.cell(name).value = value
 
     def lookup(self, name):

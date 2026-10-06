@@ -179,3 +179,18 @@ milestones. Newest at the bottom.
   of 3.5): 132 tests, all passing on both engines. Two first-run failures
   were mistakes in the tests (an ill-formed `a#|x|#b`, an undeclared record
   field), fixed in the tests.
+
+## 2026-10-06 (stage 5: chapter 4)
+
+- `4.1-primitive.scm` (55 tests: literals, calls, lambda formals, if, set!,
+  include and include-ci with files under `conformance/data/`),
+  `4.2-derived.scm` (120: cond, case, and/or, when/unless, cond-expand,
+  the let family, do and named let, delay/delay-force/make-promise,
+  parameterize, guard, quasiquote including nesting, case-lambda),
+  `4.3-macros.scm` (38: let-syntax/letrec-syntax scoping, the pattern
+  language including literals, underscore, tail and vector patterns, custom
+  ellipsis and `(... ...)`, hygiene in both directions, syntax-error's
+  example). All pass on both engines; tulip needed no changes.
+- Removed from the tests on review: a `test` call with three arguments, an
+  arity error the report does not require to be signalled, and a
+  `(b ... ...)` template, which is beyond R7RS's template grammar (7.1.5).

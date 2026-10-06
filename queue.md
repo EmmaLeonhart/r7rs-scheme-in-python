@@ -17,7 +17,6 @@ it so CI covers it. Anything the report requires that tulip does not do is
 recorded in `conformance/UNSUPPORTED.md` with the section and the reason,
 and the test is marked as an expected failure there rather than deleted.
 
-5. Chapter 5: programs, import, definitions, define-record-type, libraries.
 6. Chapter 6.1 to 6.9: equivalence, numbers, booleans, lists, symbols,
    characters, strings, vectors, bytevectors.
 7. Chapter 6.10 to 6.14: control, exceptions, eval, I/O, system interface.

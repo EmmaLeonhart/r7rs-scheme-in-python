@@ -194,3 +194,16 @@ milestones. Newest at the bottom.
 - Removed from the tests on review: a `test` call with three arguments, an
   arity error the report does not require to be signalled, and a
   `(b ... ...)` template, which is beyond R7RS's template grammar (7.1.5).
+
+## 2026-10-06 (stage 5: chapter 5)
+
+- `5-programs.scm` (48 tests): every import-set form, top-level and internal
+  definitions, define-values, define-syntax (including macros that expand
+  into definitions), define-record-type (generativity, partial constructors),
+  library declarations (export rename, several begins, include, include-ci,
+  include-library-declarations, cond-expand with export), load-once, and the
+  report's own grid/life library example from 5.6.2 run for four
+  generations. Libraries in `conformance/example/` and
+  `conformance/conformance/`. All pass on both engines with no changes to
+  tulip; one first-run failure was a miscounted escape sequence in the test.
+  5.7 (the REPL) is left to `tests/test_system.py`.

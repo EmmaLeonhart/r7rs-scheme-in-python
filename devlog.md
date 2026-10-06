@@ -228,3 +228,16 @@ milestones. Newest at the bottom.
   1, and `rationalize`'s inexact result must be compared with `(inexact 1/3)`.
 - 150 unit tests pass on both engines; the suite so far: 715 tests per
   engine, all pass, 14 expected failures.
+
+## 2026-10-06 (stage 5: 6.4 to 6.9)
+
+- `6.4-lists.scm` (128 tests: list notation and mutation, all 28 c[ad]r
+  compositions used, the list procedures, member/assoc with a compare
+  procedure, list-copy, and 6.5 symbols with read/write invariance),
+  `6.6-chars-strings.scm` (146: character names, predicates over Unicode,
+  digit-value, case mapping and folding including final sigma, string
+  escapes and line continuations, comparisons, full case conversion such as
+  ß -> SS, overlapping string-copy!), `6.8-vectors-bytevectors.scm` (77,
+  including UTF-8 conversion outside the BMP). All pass on both engines with
+  no tulip changes; four mistakes in the first drafts of the tests were
+  fixed before they were recorded.

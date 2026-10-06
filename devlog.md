@@ -258,3 +258,29 @@ milestones. Newest at the bottom.
   `define-record-type`) refuse to define in them. `test_environment_isolation`
   was updated to expect the error; scheme-report-environment stays mutable
   (6.12 leaves it unspecified).
+
+## 2026-10-06 (stage 5: 6.13 and 6.14, two printer fixes)
+
+- `6.13-io.scm` (132 tests): port kinds and predicates, open/closed state,
+  call-with-port, string, bytevector and file ports (textual and binary),
+  with-input-from-file/with-output-to-file, file errors, read (eof, read
+  errors, stopping after the datum), characters, lines with all three line
+  endings, read-string, the byte procedures including read-bytevector! with
+  ranges, write/write-shared/write-simple/display, string and byte output
+  with ranges, load into an environment, file-exists?/delete-file,
+  command-line, environment variables, and the time procedures.
+- Found and fixed:
+  - `display` looped forever on circular structure (6.13.3 forbids it); it
+    now labels cycles as `write` does.
+  - `write` did not put vertical lines around symbols with non-ASCII
+    characters (6.13.3 requires it); `|λ|` now, and it reads back as the
+    same symbol.
+- The first run hung (the display loop). `conformance/run.py` now gives each
+  run no stdin and a 180 s timeout, so a hang is reported instead of
+  waited out.
+- A test that escapes from with-output-to-file leaves its port open (as
+  R7RS allows); on Windows the VM run could then not delete that file.
+  The test now uses its own file and cleanup tolerates it; this was a test
+  portability issue, not an engine difference in behavior.
+- Totals: 151 unit tests on each engine; conformance 1273 tests per engine,
+  all passing, 14 expected failures (complex numbers).

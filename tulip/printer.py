@@ -4,6 +4,7 @@ and ``display``.
 ``write`` labels only structure that is part of a cycle (``#0=(a . #0#)``),
 ``write-shared`` labels every pair or vector reached more than once, and
 ``write-simple`` never labels (and loops on cyclic data, as R7RS allows).
+``display`` labels cycles as ``write`` does, so it always terminates.
 """
 
 from __future__ import annotations
@@ -26,7 +27,8 @@ _SYMBOL_BAD = set(" \t\n\r\f\v()\";'`,|[]{}")
 
 def write_string(obj, mode="write"):
     out = []
-    labels = _find_labels(obj, mode) if mode in ("write", "shared") else {}
+    # display labels cycles like write: it must not loop forever (6.13.3)
+    labels = _find_labels(obj, mode) if mode != "simple" else {}
     _Printer(out, mode != "display", labels).emit(obj)
     return "".join(out)
 
@@ -182,7 +184,9 @@ def write_symbol(name):
     from .numbers import parse_number
     if name == "" or any(c in _SYMBOL_BAD for c in name) or name == "." \
             or name[0] == "#" or _parses_as_number(name, parse_number) \
-            or any(ord(c) < 32 for c in name):
+            or any(ord(c) < 32 or ord(c) > 126 for c in name):
+        # R7RS 6.13.3: symbols with non-ASCII characters are written with
+        # vertical lines
         return "|" + "".join(_symbol_escape(c) for c in name) + "|"
     return name
 

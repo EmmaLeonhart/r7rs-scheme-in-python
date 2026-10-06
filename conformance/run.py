@@ -22,6 +22,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 ENGINES = ("interp", "vm")
+TIMEOUT = 180   # seconds per file and engine; a hang is reported, not waited out
 
 
 def section_files():
@@ -32,9 +33,13 @@ def section_files():
 
 def run_file(path, engine):
     env = dict(os.environ, PYTHONPATH=str(ROOT), PYTHONIOENCODING="utf-8")
-    r = subprocess.run([sys.executable, "-m", "tulip", "--engine", engine, str(path)],
-                       capture_output=True, text=True, encoding="utf-8", env=env,
-                       cwd=str(HERE), timeout=600)
+    try:
+        r = subprocess.run([sys.executable, "-m", "tulip", "--engine", engine, str(path)],
+                           stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                           encoding="utf-8", env=env, cwd=str(HERE), timeout=TIMEOUT)
+    except subprocess.TimeoutExpired as e:
+        out = e.stdout.decode("utf-8", "replace") if isinstance(e.stdout, bytes) else (e.stdout or "")
+        return -1, out, "timed out after %d s" % TIMEOUT
     return r.returncode, r.stdout, r.stderr
 
 

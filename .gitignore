@@ -30,3 +30,6 @@ Thumbs.db
 # committed, so they cannot pile up as crud. Promote a script out of here only
 # once it will be run again.
 scratch/
+
+# temporary files the conformance suite writes (deleted when a run finishes)
+conformance/*.tmp

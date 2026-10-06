@@ -292,3 +292,11 @@ milestones. Newest at the bottom.
 - `conformance/run.py` accepts a bare section file name as well as a path.
 - `queue.md` is empty. INTENT.md records that the brief is complete and that
   complex numbers and further VM speed work are the user's call, not queued.
+
+## 2026-10-06 (CI running again; action versions)
+
+- GitHub Actions jobs were refused for account billing from 08:28 to about
+  09:19 UTC; the run at 09:19 UTC passed all eight jobs (Python 3.9 and
+  3.13, Ubuntu and Windows, both engines). INTENT.md updated.
+- CI uses `actions/checkout@v7` and `actions/setup-python@v7` instead of
+  v4/v5, which GitHub warned target the deprecated Node 20.

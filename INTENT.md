@@ -79,13 +79,9 @@ work. Not queued, on purpose:
 - Further VM speed work: the brief asks for a VM and benchmarks, not a
   target speed. Also NEEDS-DECISION by the user.
 
-## Blocked
+## CI
 
-- **CI is not running: BLOCKED-ON-USER-ACTION.** Since 2026-10-06 08:28 UTC
-  every GitHub Actions job is refused with "recent account payments have
-  failed or your spending limit needs to be increased" (Billing & plans in
-  the GitHub account settings). The code is not failing: the last run that
-  started (08:16 UTC) passed on all eight jobs. Until billing is fixed,
-  checked locally instead: 152 tests pass on Python 3.13 and 3.11 with both
-  engines, and every file parses as Python 3.9; a real 3.9 run waits for
-  CI. Unblock signal: the next push shows CI jobs starting again.
+- CI was blocked by GitHub account billing from 2026-10-06 08:28 to about
+  09:19 UTC (jobs refused, not failing). It is running again: the run at
+  09:19 UTC passed all eight jobs, including Python 3.9 on both operating
+  systems, which had only been checked by parsing until then.

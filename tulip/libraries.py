@@ -11,7 +11,6 @@ runtime's system environment; each standard library exports a subset of it.
 from __future__ import annotations
 
 import os
-import platform
 import sys
 from pathlib import Path
 
@@ -130,8 +129,7 @@ STANDARD_LIBRARIES = {
 
 FEATURES = ["r7rs", "exact-closed", "ratios", "full-unicode", "tulip",
             "tulip-0.1", "python", sys.platform,
-            "windows" if os.name == "nt" else "posix",
-            platform.machine().lower() or "unknown-machine"]
+            "windows" if os.name == "nt" else "posix"]
 
 
 @prim("features", 0)

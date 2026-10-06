@@ -93,13 +93,13 @@ class CondExpandTests(SchemeTestCase):
             ("(cond-expand ((library (scheme base)) 'have-base) (else 'no))", "have-base"),
             ("(cond-expand ((library (not a lib)) 'yes) (else 'no))", "no"),
             ("(memq 'r7rs (features))", "(r7rs exact-closed ratios full-unicode tulip"
-             " tulip-0.1 python %s %s %s)" % self._platform_features()),
+             " tulip-0.1 python %s %s)" % self._platform_features()),
         ])
         self.check("(cond-expand (r7rs (define cx 5))) cx", "5")
 
     def _platform_features(self):
         from tulip.libraries import FEATURES
-        return tuple(FEATURES[-3:])
+        return tuple(FEATURES[-2:])
 
     def test_in_library(self):
         self.check("""

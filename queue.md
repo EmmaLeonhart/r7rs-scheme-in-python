@@ -18,11 +18,6 @@ twice is safe. Calls to hot built-ins (`+`, `car`, `<`...) compile to
 specialized opcodes that check at run time that the global still holds the
 built-in and fall back to an ordinary (tail) call otherwise.
 
-2. Specialized opcodes for hot primitives with a correct fallback, including
-   a tail-call fallback in tail position.
-4. The whole test suite runs under both engines (`TULIP_ENGINE=vm`), in CI
-   too, plus VM-specific tests (interop with interpreter closures, re-entry
-   through VM frames, redefined built-ins).
 5. Benchmarks (`bench/`): a set of programs (fib, tak, loops, list and
    string work, closures, call/cc, a sort, n-queens...), a runner that times
    both engines and checks they agree, and `bench/RESULTS.md`.

@@ -111,3 +111,18 @@ milestones. Newest at the bottom.
   `eval` and `load` follow the runtime's engine. New: the CLI takes
   `--engine interp|vm` before FILE (exit 2 on a bad option).
 - 133 tests pass under both engines (`TULIP_ENGINE=vm`).
+
+## 2026-10-06 (stage 4: fast ops tested, CI on both engines)
+
+- The specialized opcodes for hot built-ins (`+ - < > <= >= = cons eq?`,
+  `car cdr null? pair? not zero?`, and PRIM for other primitives) were already
+  in f5b012d. `tests/test_vm.py` (12 tests) now covers them: non-fixnum
+  operands and errors match the interpreter; a global that held a built-in
+  and is later changed falls back to an ordinary call, and in tail position
+  that call is a tail call (checked by counting continuation frames: under 20
+  after 20000 iterations, against one frame per iteration for a non-tail
+  call); VM and interpreter closures call each other, including mutual tail
+  recursion, escapes, `guard` and `dynamic-wind`; re-entering continuations
+  through VM frames restores the pending operands.
+- CI runs the suite under both engines (`engine: [interp, vm]` in the matrix).
+- 145 tests pass under both engines.

@@ -1,0 +1,17 @@
+;; Strings and characters: building, converting, searching.
+(define (caesar s k)
+  (list->string
+   (map (lambda (c)
+          (if (char-alphabetic? c)
+              (integer->char (+ 97 (modulo (+ (- (char->integer (char-downcase c)) 97) k) 26)))
+              c))
+        (string->list s))))
+(define (count-char c s)
+  (let loop ((i 0) (n 0))
+    (if (= i (string-length s)) n (loop (+ i 1) (if (char=? (string-ref s i) c) (+ n 1) n)))))
+(define (run)
+  (let loop ((i 0) (s "The quick brown fox jumps over the lazy dog") (n 0))
+    (if (= i 500)
+        (list n (substring s 0 20))
+        (let ((t (caesar s 3)))
+          (loop (+ i 1) t (+ n (count-char #\e t) (string-length (string-append t "!"))))))))

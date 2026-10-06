@@ -1,0 +1,22 @@
+;; Merge sort of pseudo-random integers from a linear congruential generator.
+(define (lcg-list n seed)
+  (let loop ((i 0) (s seed) (acc '()))
+    (if (= i n) acc
+        (let ((s2 (modulo (+ (* s 1103515245) 12345) 2147483648)))
+          (loop (+ i 1) s2 (cons (quotient s2 65536) acc))))))
+(define (merge a b)
+  (cond ((null? a) b) ((null? b) a)
+        ((< (car b) (car a)) (cons (car b) (merge a (cdr b))))
+        (else (cons (car a) (merge (cdr a) b)))))
+(define (split lst)
+  (if (or (null? lst) (null? (cdr lst)))
+      (values lst '())
+      (let-values (((a b) (split (cddr lst))))
+        (values (cons (car lst) a) (cons (cadr lst) b)))))
+(define (msort lst)
+  (if (or (null? lst) (null? (cdr lst)))
+      lst
+      (let-values (((a b) (split lst))) (merge (msort a) (msort b)))))
+(define (run)
+  (let ((s (msort (lcg-list 3000 42))))
+    (list (car s) (list-ref s 1500) (car (reverse s)))))

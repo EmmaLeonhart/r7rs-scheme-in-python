@@ -18,7 +18,7 @@ twice is safe. Calls to hot built-ins (`+`, `car`, `<`...) compile to
 specialized opcodes that check at run time that the global still holds the
 built-in and fall back to an ordinary (tail) call otherwise.
 
-5. Benchmarks (`bench/`): a set of programs (fib, tak, loops, list and
-   string work, closures, call/cc, a sort, n-queens...), a runner that times
-   both engines and checks they agree, and `bench/RESULTS.md`.
+5. Profile `closures` and `callcc` on the VM (1.36x and 1.09x against about
+   2x elsewhere, `bench/RESULTS.md`): find where the time goes and fix what
+   is cheap to fix, or record why it stays.
 6. Stage 4 wrap-up: README design and numbers, devlog, check stage 5.

@@ -126,3 +126,12 @@ milestones. Newest at the bottom.
   through VM frames restores the pending operands.
 - CI runs the suite under both engines (`engine: [interp, vm]` in the matrix).
 - 145 tests pass under both engines.
+
+## 2026-10-06 (stage 4: benchmarks)
+
+- `bench/`: nine programs (fib, tak, a named-let loop, list work, string
+  work, closures, call/cc, merge sort, 8-queens) and `bench/run.py`, which
+  times `(run)` on both engines (best of 3) and fails if the results differ.
+- `bench/RESULTS.md`: the VM is 1.85x faster in total; 2 to 2.5x on calls
+  and fixnum arithmetic, 1.36x on `closures` and 1.09x on `callcc`. Those
+  two are queued for profiling.

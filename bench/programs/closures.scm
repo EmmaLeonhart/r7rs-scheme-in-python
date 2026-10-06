@@ -1,0 +1,10 @@
+;; Closures: counters, composition, and higher-order procedures.
+(define (make-counter)
+  (let ((n 0)) (lambda () (set! n (+ n 1)) n)))
+(define (compose . fs)
+  (if (null? fs) (lambda (x) x) (lambda (x) ((car fs) ((apply compose (cdr fs)) x)))))
+(define (run)
+  (let ((c (make-counter))
+        (f (compose (lambda (x) (+ x 1)) (lambda (x) (* x 2)) (lambda (x) (- x 3)))))
+    (let loop ((i 0) (acc 0))
+      (if (= i 30000) (list acc (c)) (begin (c) (loop (+ i 1) (+ acc (f i))))))))

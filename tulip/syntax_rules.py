@@ -144,17 +144,23 @@ class SyntaxRules:
                     and isinstance(t.cdr, Pair) and t.cdr.cdr is NIL:
                 # (... template): ellipses inside are literal
                 return self._instantiate(t.cdr.car, b, renames, False)
-            if ellipsis_active and isinstance(t.cdr, Pair) \
-                    and self._is_ellipsis(t.cdr.car):
-                depth = 0
-                rest = t.cdr
-                while isinstance(rest, Pair) and self._is_ellipsis(rest.car):
-                    depth += 1
-                    rest = rest.cdr
-                items = self._expand_ellipsis(t.car, b, renames, depth)
-                return make_list(items, self._instantiate(rest, b, renames, True))
-            return Pair(self._instantiate(t.car, b, renames, ellipsis_active),
-                        self._instantiate(t.cdr, b, renames, ellipsis_active))
+            # walk the list spine iteratively, so long templates don't
+            # exhaust the Python stack
+            items = []
+            while isinstance(t, Pair):
+                if ellipsis_active and isinstance(t.cdr, Pair) \
+                        and self._is_ellipsis(t.cdr.car):
+                    depth = 0
+                    rest = t.cdr
+                    while isinstance(rest, Pair) and self._is_ellipsis(rest.car):
+                        depth += 1
+                        rest = rest.cdr
+                    items.extend(self._expand_ellipsis(t.car, b, renames, depth))
+                    t = rest
+                else:
+                    items.append(self._instantiate(t.car, b, renames, ellipsis_active))
+                    t = t.cdr
+            return make_list(items, self._instantiate(t, b, renames, ellipsis_active))
         if isinstance(t, list):
             return list(self._instantiate(make_list(t), b, renames, ellipsis_active))
         return t

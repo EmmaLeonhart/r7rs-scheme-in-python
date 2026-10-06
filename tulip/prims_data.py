@@ -8,6 +8,7 @@ call/cc and tail calls work through them.
 
 from __future__ import annotations
 
+import math
 import unicodedata
 
 from .registry import alias, prim
@@ -23,8 +24,14 @@ def eqv(a, b):
     ta = type(a)
     if ta is not type(b):
         return False
-    if ta is int or ta is float:
-        return a == b or (ta is float and a != a and b != b)
+    if ta is int:
+        return a == b
+    if ta is float:
+        # 0.0 and -0.0 are = but not eqv? (they give different results,
+        # e.g. under /); two NaNs are treated as eqv?
+        if a == b:
+            return a != 0.0 or math.copysign(1.0, a) == math.copysign(1.0, b)
+        return a != a and b != b
     if is_number(a):
         return a == b
     if ta is Char:

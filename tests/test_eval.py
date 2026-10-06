@@ -204,6 +204,16 @@ class TailCallTests(SchemeTestCase):
         self.check("(define (ev? n) (if (= n 0) #t (od? (- n 1))))"
                    " (define (od? n) (if (= n 0) #f (ev? (- n 1)))) (ev? 300001)", "#f")
 
+    def test_long_and_circular_literals(self):
+        # quoted data used to be walked recursively by the expander, so long
+        # and circular literals raised RecursionError (found by the
+        # conformance suite)
+        self.check("(length '(%s))" % " ".join(["1"] * 5000), "5000")
+        self.check("(let ((x '#1=(a b . #1#))) (eq? x (cddr x)))", "#t")
+        self.check("(let ((v '#0=#(1 #0#))) (eq? v (vector-ref v 1)))", "#t")
+        self.check("(let-syntax ((m (syntax-rules () ((_) '(%s)))))"
+                   "  (length (m)))" % " ".join(["1"] * 3000), "3000")
+
     def test_deep_non_tail_recursion(self):
         # grows the heap continuation, not the Python stack
         self.check("(define (count n) (if (= n 0) 0 (+ 1 (count (- n 1))))) (count 300000)",

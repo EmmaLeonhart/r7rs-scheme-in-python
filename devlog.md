@@ -207,3 +207,24 @@ milestones. Newest at the bottom.
   `conformance/conformance/`. All pass on both engines with no changes to
   tulip; one first-run failure was a miscounted escape sequence in the test.
   5.7 (the REPL) is left to `tests/test_system.py`.
+
+## 2026-10-06 (stage 5: 6.1 to 6.3, and three fixes)
+
+- `6.1-equivalence.scm` (64 tests) and `6.2-numbers.scm` (258, plus the 14
+  complex-number examples as expected failures; 6.3 booleans are in the
+  same file). `conformance/UNSUPPORTED.md` records the complex-number gap.
+- The suite found three bugs in tulip, each fixed with a regression test:
+  - `(eqv? 0.0 -0.0)` was `#t`; tulip distinguishes negative zero, so 6.1
+    requires `#f`. `eqv?` now compares the sign of zeros (`memv`, `case`
+    follow).
+  - A circular literal in program text (`'#1=(a b . #1#)`, allowed by 2.4)
+    sent the expander's `strip_syntax` into infinite recursion. It now
+    returns alias-free data untouched and copies the rest with a memo,
+    walking list spines iteratively; a quoted list of 5000 elements, which
+    also raised RecursionError, now works.
+  - Same depth problem in syntax-rules template instantiation for long
+    literal lists in a template; the spine is now walked in a loop.
+- Test mistakes found on the way (fixed in the tests): `(remainder 13 4)` is
+  1, and `rationalize`'s inexact result must be compared with `(inexact 1/3)`.
+- 150 unit tests pass on both engines; the suite so far: 715 tests per
+  engine, all pass, 14 expected failures.

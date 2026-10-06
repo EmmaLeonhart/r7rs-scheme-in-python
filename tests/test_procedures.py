@@ -17,6 +17,9 @@ class EquivalenceTests(SchemeTestCase):
             ("(let ((p (lambda (x) x))) (eqv? p p))", "#t"), ("(eqv? #f 'nil)", "#f"),
             ("(eqv? #\\a #\\a)", "#t"), ("(eqv? \"\" \"\")", "#f"),
             ("(eqv? 1/2 1/2)", "#t"), ("(eqv? 0.5 0.5)", "#t"),
+            # signed zeros are = but not eqv? (found by the conformance suite)
+            ("(eqv? 0.0 -0.0)", "#f"), ("(eqv? -0.0 -0.0)", "#t"), ("(= 0.0 -0.0)", "#t"),
+            ("(memv -0.0 '(0.0 -0.0))", "(-0.0)"), ("(case -0.0 ((0.0) 'pos) (else 'other))", "other"),
         ])
 
     def test_eq(self):

@@ -137,20 +137,65 @@ def global_env(scope):
 
 
 def strip_syntax(x):
-    """Remove aliases from quoted data (copying only what contains one)."""
+    """Remove aliases from quoted data. Data without aliases (anything the
+    reader produced) is returned as is; otherwise it is copied. Both walks
+    follow list spines iteratively and handle shared and circular structure
+    (datum labels), so long and circular literals are fine."""
+    if not _has_alias(x):
+        return x
+    return _strip_copy(x, {})
+
+
+def _has_alias(x):
+    stack = [x]
+    seen = set()
+    while stack:
+        x = stack.pop()
+        while True:
+            if isinstance(x, Alias):
+                return True
+            if isinstance(x, Pair):
+                if id(x) in seen:
+                    break
+                seen.add(id(x))
+                stack.append(x.car)
+                x = x.cdr
+            elif isinstance(x, list):
+                if id(x) not in seen:
+                    seen.add(id(x))
+                    stack.extend(x)
+                break
+            else:
+                break
+    return False
+
+
+def _strip_copy(x, memo):
     if isinstance(x, Alias):
         return x.base()
     if isinstance(x, Pair):
-        car = strip_syntax(x.car)
-        cdr = strip_syntax(x.cdr)
-        if car is x.car and cdr is x.cdr:
-            return x
-        return Pair(car, cdr)
+        if id(x) in memo:
+            return memo[id(x)]
+        head = new = Pair(None, NIL)
+        memo[id(x)] = head
+        while True:
+            new.car = _strip_copy(x.car, memo)
+            x = x.cdr
+            if not isinstance(x, Pair):
+                new.cdr = _strip_copy(x, memo)
+                return head
+            if id(x) in memo:
+                new.cdr = memo[id(x)]
+                return head
+            new.cdr = new = Pair(None, NIL)
+            memo[id(x)] = new
     if isinstance(x, list):
-        items = [strip_syntax(i) for i in x]
-        if all(a is b for a, b in zip(items, x)):
-            return x
-        return items
+        if id(x) in memo:
+            return memo[id(x)]
+        out = []
+        memo[id(x)] = out
+        out.extend(_strip_copy(i, memo) for i in x)
+        return out
     return x
 
 
